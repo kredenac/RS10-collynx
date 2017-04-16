@@ -1,11 +1,13 @@
 #ifndef PAINTER_H
 #define PAINTER_H
-
+class Painter;
+#include "sender.h"
 #include <QMainWindow>
 #include <QtGui>
 #include <QtCore>
 #include <math.h>
 #include <QVector>
+
 
 namespace Ui {
 class Painter;
@@ -17,9 +19,11 @@ class Painter : public QMainWindow
 
 public:
     explicit Painter(QWidget *parent = 0);
-    // QPolygon& poly();
+    void stringToPoly(QString str);
     //niz poligona
     QVector<QPolygon> lines;
+    QVector<QPolygon> linesFromOthers;
+    QPolygon otherUsersPoly;
     QPolygon poly;
     ~Painter();
 
