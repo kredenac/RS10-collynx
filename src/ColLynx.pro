@@ -6,6 +6,8 @@
 
 QT += core gui
 QT += network
+QT += widgets
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = ColLynx
@@ -25,9 +27,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         painter.cpp \
-    sender.cpp
+    sender.cpp \
+    lines.cpp
 
 HEADERS  += painter.h \
-    sender.h
+    sender.h \
+    lines.h
 
 FORMS    += painter.ui

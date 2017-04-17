@@ -9,15 +9,15 @@ bool Sender::makeConnection()
     //qDebug() << "Tried to connect\r\n";
     //so client can also read
     connect(mySocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
+
     return true;
 }
 
 bool Sender::send(QString toSend)
 {
-    QByteArray bytesToSend = (toSend /*+ "\r\n"*/).toLatin1();
+    //TODO optimize with ints, not strings
+    QByteArray bytesToSend = (toSend).toLatin1();
     mySocket->write(bytesToSend.data());
-
-    //mySocket->write("ja sam klijent collynx");
     return true;
 }
 

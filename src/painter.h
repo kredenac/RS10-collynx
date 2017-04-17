@@ -2,12 +2,13 @@
 #define PAINTER_H
 class Painter;
 #include "sender.h"
+#include "lines.h"
 #include <QMainWindow>
 #include <QtGui>
 #include <QtCore>
 #include <math.h>
 #include <QVector>
-
+#include <QColorDialog>
 
 namespace Ui {
 class Painter;
@@ -20,23 +21,19 @@ class Painter : public QMainWindow
 public:
     explicit Painter(QWidget *parent = 0);
     void stringToPoly(QString str);
-    //niz poligona
-    QVector<QPolygon> lines;
-    QVector<QPolygon> linesFromOthers;
-    QPolygon otherUsersPoly;
-    QPolygon poly;
+    Lines myLines;
+    Lines otherLines;
     ~Painter();
 
 private:
     Ui::Painter *ui;
 
-
-//posto hocemo da crtamo, zovi tad ovu fju.
 protected:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event );
-    void mouseReleaseEvent(QMouseEvent *e);
+    void mouseReleaseEvent(QMouseEvent *event);
+    bool isMousePressed;
 };
 
 #endif // PAINTER_H
