@@ -1,19 +1,17 @@
 #include "painter.h"
 #include "ui_painter.h"
-#include <QRect>
-#include <QApplication>
+
 Painter::Painter(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::Painter)
+    ui(new Ui::Painter), brushSize(7)
 {
-
     ui->setupUi(this);
     isMousePressed = false;
     //da prepoznaje mouse movement
     setMouseTracking(true);
     ui->centralWidget->setMouseTracking(true);
+
     /*
-    //
     //setStyleSheet("background-image : url(C:/Users/Dzoni/Documents/QtProjects/ColLynx/img_fjords.jpg);");
     //setStyleSheet("backgroud-style : cover");
     //setStyleSheet("opacity: 100);");
@@ -30,7 +28,8 @@ Painter::Painter(QWidget *parent) :
     //qDebug() << height << " " << width;
     //QSize windowSize(width,height);
     QSize windowSize(width/2,height/2);
-    this->setFixedSize(windowSize);
+    //setFixedSize(windowSize);
+    setBaseSize(windowSize);
 }
 
 Painter::~Painter()
@@ -38,10 +37,32 @@ Painter::~Painter()
     delete ui;
 }
 
-//bool isMousePressed = false;
-QColor lineColor = QColor(10,177,200);
 
-void Painter::mouseMoveEvent( QMouseEvent * event )
+void Painter::keyPressEvent(QKeyEvent * event)
+{
+    //qDebug() << "key = " << event->key();
+    switch (event->key()) {
+    case Qt::Key_Escape:
+        QCoreApplication::quit();
+        break;
+    case Qt::Key_Plus:
+        brushSize++;
+        myLines.getLines().last().pen.setWidth(brushSize);
+        break;
+    case Qt::Key_Minus:
+        brushSize > 1 ? brushSize-- : brushSize;
+        myLines.getLines().last().pen.setWidth(brushSize);
+        break;
+    case Qt::Key_Z:
+        myLines.undo();
+        update();
+    default:
+        break;
+    }
+
+}
+
+void Painter::mouseMoveEvent(QMouseEvent * event )
 {
     //qDebug()<< isMousePressed;
     if (isMousePressed){
@@ -50,9 +71,8 @@ void Painter::mouseMoveEvent( QMouseEvent * event )
         //TODO dodaj u sender
         QString coordsToSend = QString::number(newPoint.x()) + " " + QString::number(newPoint.y()) + " ";
         Sender::getInstance().send(coordsToSend);
-        //poly << newPoint;
         myLines.addPoint(newPoint);
-        this->update();
+        update();
     }
 }
 
@@ -60,8 +80,8 @@ void Painter::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton){
         isMousePressed = false;
-        myLines.newLine();
-        this->update();
+        myLines.newLine(myLines.getLines().last().pen, brushSize);
+        update();
         //send -1 -1 to others, so they 'relese the mouse' too
         QString coordsToSend = QString::number(-1) + " " + QString::number(-1) + " ";
         Sender::getInstance().send(coordsToSend);
@@ -76,7 +96,9 @@ void Painter::mousePressEvent(QMouseEvent *event)
     if (event->button() == Qt::RightButton){
         QColor color = QColorDialog::getColor(Qt::white, this, "Izaberite boju");
         if (color.isValid()){
-            lineColor = color;
+            QPen pointPen(color);
+            pointPen.setWidth(brushSize);
+            myLines.setPen(pointPen) ;
         }
     }
 }
@@ -86,12 +108,9 @@ void Painter::paintEvent(QPaintEvent *event)
     Q_UNUSED(event);
     //klasa pomocu koje crtamo
     QPainter painter(this);
-    QPen pointPen(lineColor);
-    pointPen.setWidth(7);
-
-    painter.setPen(pointPen);
     for (const auto l : myLines.getLines()){
-        painter.drawPolyline(l);
+        painter.setPen(l.pen);
+        painter.drawPolyline(l.poly);
     }
 
     //draw other users
@@ -99,8 +118,8 @@ void Painter::paintEvent(QPaintEvent *event)
     otherPen.setWidth(7);
     painter.setPen(otherPen);
     for (const auto l : otherLines.getLines()){
-
-        painter.drawPolyline(l);
+        painter.setPen(l.pen);
+        painter.drawPolyline(l.poly);
     }
 }
 
@@ -123,6 +142,6 @@ void Painter::stringToPoly(QString str)
             otherLines.addPoint(newPoint);
         }
     }
-    this->update();
+    update();
 }
 

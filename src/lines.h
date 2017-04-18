@@ -4,15 +4,28 @@
 #include <QPolygon>
 #include <QPoint>
 #include <QDebug>
+#include <QPen>
+
+class Drawable
+{
+public:
+    QPolygon poly;
+    QPen pen;
+};
+
 class Lines
 {
 public:
     Lines();
-    QVector<QPolygon>& getLines();
+    QVector<Drawable>& getLines();
     QPolygon& addPoint(QPoint newPoint);
     QPolygon& newLine();
+    QPolygon& newLine(QPen newPen);
+    QPolygon& newLine(QPen newPen, int brushSize);
+    void setPen(QPen newPen);
+    void undo();
 private:
-    QVector<QPolygon> lines;
+    QVector<Drawable> lines;
 };
 
 #endif // LINES_H

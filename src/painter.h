@@ -27,12 +27,13 @@ public:
 
 private:
     Ui::Painter *ui;
-
+    int brushSize;
 protected:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event );
     void mouseReleaseEvent(QMouseEvent *event);
+    void keyPressEvent(QKeyEvent *);
     bool isMousePressed;
 };
 
