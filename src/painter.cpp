@@ -10,7 +10,6 @@ Painter::Painter(QWidget *parent) :
     //da prepoznaje mouse movement
     setMouseTracking(true);
     ui->centralWidget->setMouseTracking(true);
-
     /*
     //setStyleSheet("background-image : url(C:/Users/Dzoni/Documents/QtProjects/ColLynx/img_fjords.jpg);");
     //setStyleSheet("backgroud-style : cover");
@@ -29,14 +28,9 @@ Painter::Painter(QWidget *parent) :
     //QSize windowSize(width,height);
     QSize windowSize(width/2,height/2);
     //setFixedSize(windowSize);
-    setBaseSize(windowSize);
-}
+    setMinimumSize(windowSize);
 
-Painter::~Painter()
-{
-    delete ui;
 }
-
 
 void Painter::keyPressEvent(QKeyEvent * event)
 {
@@ -56,10 +50,14 @@ void Painter::keyPressEvent(QKeyEvent * event)
     case Qt::Key_Z:
         myLines.undo();
         update();
+    case Qt::Key_T:
+    {
+        QPen pen;
+        Sender::getInstance().send(pen);
+    }
     default:
         break;
     }
-
 }
 
 void Painter::mouseMoveEvent(QMouseEvent * event )
@@ -67,10 +65,8 @@ void Painter::mouseMoveEvent(QMouseEvent * event )
     //qDebug()<< isMousePressed;
     if (isMousePressed){
         QPoint newPoint = event->pos();
-        //qDebug() << newPoint;
-        //TODO dodaj u sender
-        QString coordsToSend = QString::number(newPoint.x()) + " " + QString::number(newPoint.y()) + " ";
-        Sender::getInstance().send(coordsToSend);
+
+        Sender::getInstance().send(newPoint);
         myLines.addPoint(newPoint);
         update();
     }
@@ -80,8 +76,10 @@ void Painter::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton){
         isMousePressed = false;
+        //Transform::shift(150, 0, myLines.getLines().last());
         myLines.newLine(myLines.getLines().last().pen, brushSize);
         update();
+        //Sender::getInstance().send(Sender::Endl)
         //send -1 -1 to others, so they 'relese the mouse' too
         QString coordsToSend = QString::number(-1) + " " + QString::number(-1) + " ";
         Sender::getInstance().send(coordsToSend);
@@ -90,17 +88,48 @@ void Painter::mouseReleaseEvent(QMouseEvent *event)
 
 void Painter::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::LeftButton){
+
+    switch (event->button()) {
+    case Qt::LeftButton:{
         isMousePressed = true;
-    }
-    if (event->button() == Qt::RightButton){
-        QColor color = QColorDialog::getColor(Qt::white, this, "Izaberite boju");
+        //send pen info to others
+        qDebug() << event->pos();
+        QPoint p(event->pos());
+        myLines.addPoint(p);
+        //grozota ako hocemo da se vidi tacka cim se klikne
+        /*int x =p.x() + 1;
+        p.setX(x);
+        myLines.addPoint(p);*/
+        Sender::getInstance().send(myLines.getLines().last().pen);
+        Sender::getInstance().send(event->pos());
+        }
+        break;
+    case Qt::RightButton:{
+       QColor color(selectColor(event->pos()) );
         if (color.isValid()){
             QPen pointPen(color);
             pointPen.setWidth(brushSize);
             myLines.setPen(pointPen) ;
+            break;
         }
+        }
+        break;
+    case Qt::MiddleButton:
+        move(event->pos());
+        break;
+    default:
+        break;
     }
+
+}
+
+QColor Painter::selectColor(QPoint pos)
+{
+    QColorDialog parent(this);
+    parent.setStyleSheet("background : rgba(175, 175, 176, 1);");
+
+    parent.move(pos.x(), pos.y());
+    return QColorDialog::getColor(Qt::white, &parent, "Choose color");
 }
 
 void Painter::paintEvent(QPaintEvent *event)
@@ -126,7 +155,7 @@ void Painter::paintEvent(QPaintEvent *event)
 void Painter::stringToPoly(QString str)
 {
     QStringList listStr = str.split(' ', QString::SkipEmptyParts);
-    qDebug() << "DEBUGGG"<< listStr.size();
+    //qDebug() << "DEBUGGG"<< listStr.size();
     //maybe 0, not 1? if somethings goes wrong
     if (listStr.size() <= 1 || listStr.size() % 2){
         return;
@@ -136,7 +165,17 @@ void Painter::stringToPoly(QString str)
         qDebug() << "x je " << listStr[i] << ", y je " << listStr[i+1];
         QPoint newPoint(listStr[i].toInt(), listStr[i+1].toInt());
         //if -1 -1, then add to new poly
-        if (newPoint.x() == -1 && newPoint.y() == -1 ){
+        if (newPoint.x() == -2){
+            qDebug() << "STIGLA BOJA ^_^";
+
+            qDebug() << "col: "<< listStr[i+1].toInt(Q_NULLPTR, 16);
+            otherLines.setPenColor(listStr[i+1].toInt(Q_NULLPTR, 16));
+        } else if (newPoint.x() == -3){
+            qDebug() << "stigao W I D T H" << listStr[i+1].toInt();
+            otherLines.setPenWidth(listStr[i+1].toInt());
+
+        }
+        else if (newPoint.x() == -1 && newPoint.y() == -1 ){
             otherLines.newLine();
         }else{
             otherLines.addPoint(newPoint);
@@ -145,3 +184,8 @@ void Painter::stringToPoly(QString str)
     update();
 }
 
+
+Painter::~Painter()
+{
+    delete ui;
+}

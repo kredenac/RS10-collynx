@@ -33,7 +33,8 @@ QPolygon& Lines::newLine()
     Drawable newPoly;
     QPen newPen(Qt::red);
     newPen.setCapStyle(Qt::RoundCap);
-    newPen.setWidth(7);
+    int defaultWidth = 7;
+    newPen.setWidth(defaultWidth);
     newPen.setCosmetic(true);
     newPoly.pen = newPen;
     lines.append(newPoly);
@@ -54,6 +55,14 @@ void Lines::setPen(QPen newPen)
     lines.last().pen = newPen;
 }
 
+void Lines::setPen(int color, int brushSize)
+{
+    QColor col(color);
+    QPen pen(col);
+    pen.setWidth(brushSize);
+    lines.last().pen = pen;
+}
+
 void Lines::undo()
 {
     //the last poly is empty, so remove the 2nd last
@@ -64,4 +73,15 @@ void Lines::undo()
         //newLine(lastPen);
         //qDebug() << lines.length() << "after";
     }
+}
+
+void Lines::setPenColor(const int color)
+{
+    QColor col(color);
+    lines.last().pen.setColor(col);
+}
+
+void Lines::setPenWidth(const int brushSize)
+{
+    lines.last().pen.setWidth(brushSize);
 }

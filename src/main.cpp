@@ -8,6 +8,6 @@ int main(int argc, char *argv[])
     Painter w;
     w.show();
     Sender::getInstance().setPainterFriend(&w);
-    Sender::getInstance().send("ColLynx");
+    //Sender::getInstance().send("ColLynx");
     return a.exec();
 }

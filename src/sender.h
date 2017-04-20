@@ -5,13 +5,15 @@
 #include <QTcpSocket>
 #include <QDebug>
 #include <QString>
-
+#include <QPen>
 //singleton
 class Sender : public QObject
 {
     Q_OBJECT
 public:
     bool send(QString toSend);
+    bool send(QPoint tosend);
+    void send(QPen &pen);
     bool makeConnection();
     static Sender & getInstance();
     Sender(Sender const&)         = delete;

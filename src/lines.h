@@ -1,5 +1,6 @@
 #ifndef LINES_H
 #define LINES_H
+
 #include <QVector>
 #include <QPolygon>
 #include <QPoint>
@@ -10,7 +11,7 @@ class Drawable
 {
 public:
     QPolygon poly;
-    QPen pen;
+    QPen pen; 
 };
 
 class Lines
@@ -23,6 +24,9 @@ public:
     QPolygon& newLine(QPen newPen);
     QPolygon& newLine(QPen newPen, int brushSize);
     void setPen(QPen newPen);
+    void setPen(int color, int brushSize);
+    void setPenColor(const int color);
+    void setPenWidth(const int brushSize);
     void undo();
 private:
     QVector<Drawable> lines;

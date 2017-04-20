@@ -27,10 +27,12 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += main.cpp\
         painter.cpp \
     sender.cpp \
-    lines.cpp
+    lines.cpp \
+    transform.cpp
 
 HEADERS  += painter.h \
     sender.h \
-    lines.h
+    lines.h \
+    transform.h
 
 FORMS    += painter.ui

@@ -3,6 +3,7 @@
 class Painter;
 #include "sender.h"
 #include "lines.h"
+#include "transform.h"
 #include <QMainWindow>
 #include <QtGui>
 #include <QtCore>
@@ -28,12 +29,13 @@ public:
 private:
     Ui::Painter *ui;
     int brushSize;
+    QColor selectColor(QPoint pos);
 protected:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event );
     void mouseReleaseEvent(QMouseEvent *event);
-    void keyPressEvent(QKeyEvent *);
+    void keyPressEvent(QKeyEvent *event);
     bool isMousePressed;
 };
 
