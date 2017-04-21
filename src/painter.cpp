@@ -15,17 +15,22 @@ Painter::Painter(QWidget *parent) :
     //setStyleSheet("backgroud-style : cover");
     //setStyleSheet("opacity: 100);");
     */
-    setStyleSheet("background : rgba(5,0,20,0.2);");
-    setAttribute(Qt::WA_TranslucentBackground);
-    setWindowFlags(Qt::WindowSystemMenuHint);
+
+    //setStyleSheet("opacity : 0.2");
+    setStyleSheet("background : rgba(5,0,20,0.12);");
+
     setWindowFlags(Qt::FramelessWindowHint);
+    //setParent(0); // Create TopLevel-Widget
+    setAttribute(Qt::WA_NoSystemBackground, true);
+    setAttribute(Qt::WA_TranslucentBackground, true);
+    setFocusPolicy(Qt::StrongFocus);
     // strech window to fit screen
     QScreen * screen = QGuiApplication::primaryScreen();
     QRect  screenGeometry = screen->geometry();
     int height = screenGeometry.height();
     int width = screenGeometry.width();
     //qDebug() << height << " " << width;
-    //QSize windowSize(width,height);
+//    QSize windowSize(width,height);
     QSize windowSize(width/2,height/2);
     //setFixedSize(windowSize);
     setMinimumSize(windowSize);
