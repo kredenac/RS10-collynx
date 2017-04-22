@@ -15,22 +15,17 @@ Painter::Painter(QWidget *parent) :
     //setStyleSheet("backgroud-style : cover");
     //setStyleSheet("opacity: 100);");
     */
-
-    //setStyleSheet("opacity : 0.2");
-    setStyleSheet("background : rgba(5,0,20,0.12);");
-
+    setStyleSheet("background : rgba(5,0,20,0.2);");
+    setAttribute(Qt::WA_TranslucentBackground);
+    setWindowFlags(Qt::WindowSystemMenuHint);
     setWindowFlags(Qt::FramelessWindowHint);
-    //setParent(0); // Create TopLevel-Widget
-    setAttribute(Qt::WA_NoSystemBackground, true);
-    setAttribute(Qt::WA_TranslucentBackground, true);
-    setFocusPolicy(Qt::StrongFocus);
     // strech window to fit screen
     QScreen * screen = QGuiApplication::primaryScreen();
     QRect  screenGeometry = screen->geometry();
     int height = screenGeometry.height();
     int width = screenGeometry.width();
     //qDebug() << height << " " << width;
-//    QSize windowSize(width,height);
+    //QSize windowSize(width,height);
     QSize windowSize(width/2,height/2);
     //setFixedSize(windowSize);
     setMinimumSize(windowSize);
@@ -101,10 +96,6 @@ void Painter::mousePressEvent(QMouseEvent *event)
         qDebug() << event->pos();
         QPoint p(event->pos());
         myLines.addPoint(p);
-        //grozota ako hocemo da se vidi tacka cim se klikne
-        /*int x =p.x() + 1;
-        p.setX(x);
-        myLines.addPoint(p);*/
         Sender::getInstance().send(myLines.getLines().last().pen);
         Sender::getInstance().send(event->pos());
         }
@@ -140,21 +131,11 @@ QColor Painter::selectColor(QPoint pos)
 void Painter::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
-    //klasa pomocu koje crtamo
-    QPainter painter(this);
-    for (const auto l : myLines.getLines()){
-        painter.setPen(l.pen);
-        painter.drawPolyline(l.poly);
-    }
 
-    //draw other users
-    QPen otherPen(QColor(66, 15, 91));
-    otherPen.setWidth(7);
-    painter.setPen(otherPen);
-    for (const auto l : otherLines.getLines()){
-        painter.setPen(l.pen);
-        painter.drawPolyline(l.poly);
-    }
+    QPainter painter(this);
+    myLines.drawAll(painter);
+
+    otherLines.drawAll(painter);
 }
 
 void Painter::stringToPoly(QString str)
@@ -171,14 +152,12 @@ void Painter::stringToPoly(QString str)
         QPoint newPoint(listStr[i].toInt(), listStr[i+1].toInt());
         //if -1 -1, then add to new poly
         if (newPoint.x() == -2){
-            qDebug() << "STIGLA BOJA ^_^";
-
-            qDebug() << "col: "<< listStr[i+1].toInt(Q_NULLPTR, 16);
+            //qDebug() << "STIGLA BOJA ^_^";
+            //qDebug() << "col: "<< listStr[i+1].toInt(Q_NULLPTR, 16);
             otherLines.setPenColor(listStr[i+1].toInt(Q_NULLPTR, 16));
         } else if (newPoint.x() == -3){
-            qDebug() << "stigao W I D T H" << listStr[i+1].toInt();
+            //qDebug() << "stigao W I D T H" << listStr[i+1].toInt();
             otherLines.setPenWidth(listStr[i+1].toInt());
-
         }
         else if (newPoint.x() == -1 && newPoint.y() == -1 ){
             otherLines.newLine();

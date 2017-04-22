@@ -5,6 +5,23 @@ Lines::Lines()
     newLine();
 }
 
+void Drawable::drawOn(QPainter & screen) const
+{
+    screen.setPen(pen);
+    //qDebug() << poly.length();
+    if (poly.length()==1){
+      screen.drawPoint(poly.first());
+    } else {
+      screen.drawPolyline(poly);
+    }
+}
+
+void Lines::drawAll(QPainter & screen) const
+{
+    for (const auto l : lines){
+        l.drawOn(screen);
+    }
+}
 
 QVector<Drawable>& Lines::getLines()
 {

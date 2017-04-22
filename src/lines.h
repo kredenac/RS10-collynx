@@ -6,10 +6,15 @@
 #include <QPoint>
 #include <QDebug>
 #include <QPen>
+#include <QPainter>
 
 class Drawable
 {
 public:
+    void drawOn(QPainter & screen) const;
+    enum Shape {
+        line, ellipse, rectangle
+    };
     QPolygon poly;
     QPen pen; 
 };
@@ -18,6 +23,7 @@ class Lines
 {
 public:
     Lines();
+    void drawAll(QPainter & screen) const;
     QVector<Drawable>& getLines();
     QPolygon& addPoint(QPoint newPoint);
     QPolygon& newLine();
@@ -27,6 +33,7 @@ public:
     void setPen(int color, int brushSize);
     void setPenColor(const int color);
     void setPenWidth(const int brushSize);
+
     void undo();
 private:
     QVector<Drawable> lines;
