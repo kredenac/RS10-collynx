@@ -6,30 +6,20 @@ bool Sender::makeConnection()
     //qDebug() << "Connecting\r\n";
     mySocket = new QTcpSocket();
     mySocket->connectToHost("localhost", 1234);
-    //qDebug() << "Tried to connect\r\n";
     //so client can also read
     connect(mySocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
-
     return true;
 }
 
 void Sender::send(QPen &pen)
 {
-    QByteArray ba;
-    //pen.color().HexArgb();
+    //QByteArray ba;
     QColor col(pen.color());
-    //pen.setColor(col);
-    //col.name();
-    QString toSend ="-2 " + col.name().remove(0,1) + " ";
-    //ba = toSend.toLatin1();
+
+    QString toSend = QString::number(Tag::color) + " " + col.name().remove(0,1) + " ";
     send(toSend);
-    //-3 je za width pena
-    toSend = "-3 " + QString::number(pen.width()) + " ";
+    toSend = QString::number(Tag::width) + " " + QString::number(pen.width()) + " ";
     send(toSend);
-    //qDebug()<< ba.data();
-    //-2 znaci da se salje boja
-    //QString back = QString::fromLocal8Bit(ba) ;
-    //qDebug() << back.toInt(Q_NULLPTR, 16);
 }
 
 bool Sender::send(QPoint toSend)
@@ -38,10 +28,14 @@ bool Sender::send(QPoint toSend)
     send(coordsToSend);
     return true;
 }
+void Sender::send(Shape::Type shapeType)
+{
+     QString toSend = QString::number(Tag::shape) + " " + QString::number(shapeType) + " ";
+     send(toSend);
+}
 
 bool Sender::send(QString toSend)
 {
-    //TODO optimize with ints, not strings
     QByteArray bytesToSend = toSend.toLatin1();
     mySocket->write(bytesToSend.data());
     return true;

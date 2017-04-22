@@ -30,6 +30,11 @@ private:
     Ui::Painter *ui;
     int brushSize;
     QColor selectColor(QPoint pos);
+    Shape::Type nowDrawing;
+    Shape::Type otherDrawing;
+    void moveWidgetCenter(const QPoint &globalPos);
+    void beginNewDrawable(const QPoint &pos);
+
 protected:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);

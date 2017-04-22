@@ -3,22 +3,22 @@
 
 Painter::Painter(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::Painter), brushSize(7)
+    ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line)
 {
     ui->setupUi(this);
+
     isMousePressed = false;
-    //da prepoznaje mouse movement
     setMouseTracking(true);
     ui->centralWidget->setMouseTracking(true);
     /*
     //setStyleSheet("background-image : url(C:/Users/Dzoni/Documents/QtProjects/ColLynx/img_fjords.jpg);");
     //setStyleSheet("backgroud-style : cover");
-    //setStyleSheet("opacity: 100);");
     */
     setStyleSheet("background : rgba(5,0,20,0.2);");
-    setAttribute(Qt::WA_TranslucentBackground);
-    setWindowFlags(Qt::WindowSystemMenuHint);
     setWindowFlags(Qt::FramelessWindowHint);
+    setAttribute(Qt::WA_NoSystemBackground, true);
+    setAttribute(Qt::WA_TranslucentBackground, true);
+    setFocusPolicy(Qt::StrongFocus);
     // strech window to fit screen
     QScreen * screen = QGuiApplication::primaryScreen();
     QRect  screenGeometry = screen->geometry();
@@ -29,7 +29,6 @@ Painter::Painter(QWidget *parent) :
     QSize windowSize(width/2,height/2);
     //setFixedSize(windowSize);
     setMinimumSize(windowSize);
-
 }
 
 void Painter::keyPressEvent(QKeyEvent * event)
@@ -50,11 +49,23 @@ void Painter::keyPressEvent(QKeyEvent * event)
     case Qt::Key_Z:
         myLines.undo();
         update();
-    case Qt::Key_T:
-    {
+    case Qt::Key_T:{
         QPen pen;
         Sender::getInstance().send(pen);
-    }
+        }
+        break;
+    case Qt::Key_1:
+        nowDrawing = Shape::Type::line;
+        myLines.changeLastType(nowDrawing);
+        break;
+    case Qt::Key_2:
+        nowDrawing = Shape::Type::ellipse;
+        myLines.changeLastType(nowDrawing);
+        break;
+    case Qt::Key_3:
+        nowDrawing = Shape::Type::rectangle;
+        myLines.changeLastType(nowDrawing);
+        break;
     default:
         break;
     }
@@ -67,7 +78,7 @@ void Painter::mouseMoveEvent(QMouseEvent * event )
         QPoint newPoint = event->pos();
 
         Sender::getInstance().send(newPoint);
-        myLines.addPoint(newPoint);
+        myLines.addPoint(newPoint, nowDrawing);
         update();
     }
 }
@@ -75,10 +86,11 @@ void Painter::mouseMoveEvent(QMouseEvent * event )
 void Painter::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton){
+
         isMousePressed = false;
         //Transform::shift(150, 0, myLines.getLines().last());
-        myLines.newLine(myLines.getLines().last().pen, brushSize);
-        update();
+        myLines.newLine(myLines.getLines().last().pen, brushSize, nowDrawing);
+        //update();
         //Sender::getInstance().send(Sender::Endl)
         //send -1 -1 to others, so they 'relese the mouse' too
         QString coordsToSend = QString::number(-1) + " " + QString::number(-1) + " ";
@@ -90,34 +102,39 @@ void Painter::mousePressEvent(QMouseEvent *event)
 {
 
     switch (event->button()) {
-    case Qt::LeftButton:{
+    case Qt::LeftButton:
         isMousePressed = true;
-        //send pen info to others
-        qDebug() << event->pos();
-        QPoint p(event->pos());
-        myLines.addPoint(p);
-        Sender::getInstance().send(myLines.getLines().last().pen);
-        Sender::getInstance().send(event->pos());
-        }
+        beginNewDrawable(event->pos());
         break;
-    case Qt::RightButton:{
-       QColor color(selectColor(event->pos()) );
-        if (color.isValid()){
-            QPen pointPen(color);
-            pointPen.setWidth(brushSize);
-            myLines.setPen(pointPen) ;
-            break;
-        }
-        }
+    case Qt::RightButton:
+        selectColor(event->pos());
+
         break;
     case Qt::MiddleButton:
-        move(event->pos());
+        moveWidgetCenter(event->globalPos());
         break;
     default:
         break;
     }
 
 }
+void Painter::beginNewDrawable(const QPoint & pos)
+{
+    //send pen info to others
+    //qDebug() << event->pos();
+    QPoint p(pos);
+    myLines.addPoint(p, nowDrawing);
+    Sender::getInstance().send(nowDrawing);
+    Sender::getInstance().send(myLines.getLines().last().pen);
+    Sender::getInstance().send(pos);
+}
+
+void Painter::moveWidgetCenter(const QPoint& globalPos)
+{
+    QPoint offset(width()/2, height()/2);
+    parentWidget()->move(globalPos - offset);
+}
+
 
 QColor Painter::selectColor(QPoint pos)
 {
@@ -125,7 +142,13 @@ QColor Painter::selectColor(QPoint pos)
     parent.setStyleSheet("background : rgba(175, 175, 176, 1);");
 
     parent.move(pos.x(), pos.y());
-    return QColorDialog::getColor(Qt::white, &parent, "Choose color");
+    QColor color( QColorDialog::getColor(Qt::white, &parent, "Choose color") );
+    if (color.isValid()){
+        QPen pointPen(color);
+        pointPen.setWidth(brushSize);
+        myLines.setPen(pointPen);
+    }
+    return color;
 }
 
 void Painter::paintEvent(QPaintEvent *event)
@@ -141,28 +164,28 @@ void Painter::paintEvent(QPaintEvent *event)
 void Painter::stringToPoly(QString str)
 {
     QStringList listStr = str.split(' ', QString::SkipEmptyParts);
-    //qDebug() << "DEBUGGG"<< listStr.size();
     //maybe 0, not 1? if somethings goes wrong
     if (listStr.size() <= 1 || listStr.size() % 2){
         return;
     }
-    //add a point to current line, or store the line in line vector
+    //parse incoming string according to first tag
     for (int i = 0; i < listStr.size(); i+=2){
-        qDebug() << "x je " << listStr[i] << ", y je " << listStr[i+1];
+        //qDebug() << "x je " << listStr[i] << ", y je " << listStr[i+1];
         QPoint newPoint(listStr[i].toInt(), listStr[i+1].toInt());
-        //if -1 -1, then add to new poly
-        if (newPoint.x() == -2){
-            //qDebug() << "STIGLA BOJA ^_^";
-            //qDebug() << "col: "<< listStr[i+1].toInt(Q_NULLPTR, 16);
+        if (newPoint.x() == Sender::Tag::color){
             otherLines.setPenColor(listStr[i+1].toInt(Q_NULLPTR, 16));
-        } else if (newPoint.x() == -3){
-            //qDebug() << "stigao W I D T H" << listStr[i+1].toInt();
+        } else if (newPoint.x() ==  Sender::Tag::width){
             otherLines.setPenWidth(listStr[i+1].toInt());
-        }
-        else if (newPoint.x() == -1 && newPoint.y() == -1 ){
-            otherLines.newLine();
+        //if -1 -1, then add to new poly
+        } else if (newPoint.x() ==  Sender::Tag::endline && newPoint.y() == Sender::Tag::endline ){
+            otherLines.newLine(otherDrawing);
+        } else if (newPoint.x() == Sender::Tag::shape) {
+            otherDrawing = static_cast<Shape::Type>(listStr[i+1].toInt());
+            otherLines.changeLastType(otherDrawing);
+
         }else{
-            otherLines.addPoint(newPoint);
+            //otherwise, it's an odrinary point
+            otherLines.addPoint(newPoint, otherDrawing);
         }
     }
     update();
