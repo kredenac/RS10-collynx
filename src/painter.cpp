@@ -19,6 +19,7 @@ Painter::Painter(QWidget *parent) :
     setAttribute(Qt::WA_NoSystemBackground, true);
     setAttribute(Qt::WA_TranslucentBackground, true);
     setFocusPolicy(Qt::StrongFocus);
+
     // strech window to fit screen
     QScreen * screen = QGuiApplication::primaryScreen();
     QRect  screenGeometry = screen->geometry();
@@ -29,6 +30,7 @@ Painter::Painter(QWidget *parent) :
     QSize windowSize(width/2,height/2);
     //setFixedSize(windowSize);
     setMinimumSize(windowSize);
+
 }
 
 void Painter::keyPressEvent(QKeyEvent * event)
@@ -46,13 +48,18 @@ void Painter::keyPressEvent(QKeyEvent * event)
         brushSize > 1 ? brushSize-- : brushSize;
         myLines.getLines().last().pen.setWidth(brushSize);
         break;
-    case Qt::Key_Z:
+    case Qt::Key_Z:{
         myLines.undo();
+        QString toSend = QString::number(Sender::Tag::undo) + " " + QString::number(Sender::Tag::undo) + " ";
+        Sender::getInstance().send(toSend);
         update();
+    }
+        break;
     case Qt::Key_T:{
-        QPen pen;
-        Sender::getInstance().send(pen);
-        }
+        static bool test = false;
+        stayOnTop(test);
+        test = ! test;
+    }
         break;
     case Qt::Key_1:
         nowDrawing = Shape::Type::line;
@@ -71,6 +78,19 @@ void Painter::keyPressEvent(QKeyEvent * event)
     }
 }
 
+void Painter::stayOnTop(bool setTop)
+{
+    if (setTop){
+        this->parentWidget()->setWindowFlags(
+                    this->parentWidget()->windowFlags() | Qt::WindowStaysOnTopHint);
+        this->parentWidget()->show();
+    } else {
+        this->parentWidget()->setWindowFlags(
+                    this->parentWidget()->windowFlags() & ~Qt::WindowStaysOnTopHint);
+        this->parentWidget()->show();
+    }
+}
+
 void Painter::mouseMoveEvent(QMouseEvent * event )
 {
     //qDebug()<< isMousePressed;
@@ -86,12 +106,8 @@ void Painter::mouseMoveEvent(QMouseEvent * event )
 void Painter::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::LeftButton){
-
         isMousePressed = false;
-        //Transform::shift(150, 0, myLines.getLines().last());
         myLines.newLine(myLines.getLines().last().pen, brushSize, nowDrawing);
-        //update();
-        //Sender::getInstance().send(Sender::Endl)
         //send -1 -1 to others, so they 'relese the mouse' too
         QString coordsToSend = QString::number(-1) + " " + QString::number(-1) + " ";
         Sender::getInstance().send(coordsToSend);
@@ -100,11 +116,11 @@ void Painter::mouseReleaseEvent(QMouseEvent *event)
 
 void Painter::mousePressEvent(QMouseEvent *event)
 {
-
     switch (event->button()) {
     case Qt::LeftButton:
         isMousePressed = true;
         beginNewDrawable(event->pos());
+        update();
         break;
     case Qt::RightButton:
         selectColor(event->pos());
@@ -182,8 +198,9 @@ void Painter::stringToPoly(QString str)
         } else if (newPoint.x() == Sender::Tag::shape) {
             otherDrawing = static_cast<Shape::Type>(listStr[i+1].toInt());
             otherLines.changeLastType(otherDrawing);
-
-        }else{
+        } else if(newPoint.x() == Sender::Tag::undo){
+            otherLines.undo();
+        } else {
             //otherwise, it's an odrinary point
             otherLines.addPoint(newPoint, otherDrawing);
         }

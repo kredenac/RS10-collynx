@@ -34,7 +34,7 @@ private:
     Shape::Type otherDrawing;
     void moveWidgetCenter(const QPoint &globalPos);
     void beginNewDrawable(const QPoint &pos);
-
+    void stayOnTop(bool setTop);
 protected:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);

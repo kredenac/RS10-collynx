@@ -11,10 +11,11 @@ int main(int argc, char *argv[])
     QMainWindow *window = new QMainWindow();
     window->setAttribute( Qt::WA_TranslucentBackground );
     window->setWindowTitle(QString::fromUtf8("ColLynx"));
-    window->setWindowFlags(Qt::FramelessWindowHint);
+    window->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
 
+    //window->setWindowFlags();
     window->setCentralWidget(&w);
     window->show();
-
+    //window->move(QPoint(0,0));
     return a.exec();
 }

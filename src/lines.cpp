@@ -179,9 +179,9 @@ void Lines::undo()
     if (lines.length() > 1){
         //qDebug() << lines.length() << "before";
         QPen lastPen = lines.last().pen;
-        lines.remove(lines.length() - 2);
-        //newLine(lastPen);
-        //qDebug() << lines.length() << "after";
+        int toDelete = lines.length() - 2;
+        delete lines[toDelete].shape;
+        lines.remove(toDelete);
     }
 }
 

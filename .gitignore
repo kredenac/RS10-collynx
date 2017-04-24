@@ -31,4 +31,4 @@
 #Qt
 *pro.user
 *.autosave
-
+build-*/

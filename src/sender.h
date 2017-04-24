@@ -13,7 +13,7 @@ class Sender : public QObject
     Q_OBJECT
 public:
     enum Tag{
-        endline = -1, color = -2, width = -3, shape = -4
+        endline = -1, color = -2, width = -3, shape = -4, undo = -5
     };
     bool send(QString toSend);
     bool send(QPoint tosend);

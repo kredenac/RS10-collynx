@@ -5,7 +5,9 @@ bool Sender::makeConnection()
 {
     //qDebug() << "Connecting\r\n";
     mySocket = new QTcpSocket();
-    mySocket->connectToHost("localhost", 1234);
+    mySocket->connectToHost(//"192.168.1.10",
+                            "localhost",
+                            1234);
     //so client can also read
     connect(mySocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
     return true;
@@ -13,6 +15,7 @@ bool Sender::makeConnection()
 
 void Sender::send(QPen &pen)
 {
+    //qDebug() << mySocket->localAddress().toString() << mySocket->localPort();
     //QByteArray ba;
     QColor col(pen.color());
 
