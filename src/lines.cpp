@@ -8,39 +8,34 @@ Lines::Lines()
 {
     newLine(Shape::Type::line);
 }
-MyEllipse::MyEllipse() : firstPoint(true)
-{
 
-}
+MyEllipse::MyEllipse() : firstPoint(true)
+{}
 
 MyRectangle::MyRectangle() : firstPoint(true)
-{
+{}
 
-}
-
-void Lines::changeLastType(Shape::Type shapeType)
-{
-    //delete lines.last().shape;
-    switch (shapeType) {
-    case Shape::Type::rectangle:
-        lines.last().shape = new MyRectangle();
-        break;
-    case Shape::Type::square:
-        lines.last().shape = new MySquare();
-        break;
-    case Shape::Type::ellipse:
-        lines.last().shape = new MyEllipse();
-        break;
-    case Shape::Type::circle:
-        lines.last().shape = new MyCircle();
-        break;
-    default:
-        lines.last().shape = new MyLine();
-        break;
+    void Lines::changeLastType(Shape::Type shapeType)
+    {
+        //delete lines.last().shape;
+        switch (shapeType) {
+        case Shape::Type::rectangle:
+            lines.last().shape = new MyRectangle();
+            break;
+        case Shape::Type::square:
+            lines.last().shape = new MySquare();
+            break;
+        case Shape::Type::ellipse:
+            lines.last().shape = new MyEllipse();
+            break;
+        case Shape::Type::circle:
+            lines.last().shape = new MyCircle();
+            break;
+        default:
+            lines.last().shape = new MyLine();
+            break;
+        }
     }
-
-
-}
 
 void MyLine::addPoint(QPoint newPoint)
 {
@@ -54,6 +49,23 @@ void MyEllipse::addPoint(QPoint newPoint)
         rect.setTopLeft(newPoint);
         rect.setBottomRight(newPoint);
     } else {
+        rect.setBottomRight(newPoint);
+    }
+}
+
+void MyCircle::addPoint(QPoint newPoint)
+{
+    if (firstPoint){
+        firstPoint = false;
+        rect.setTopLeft(newPoint);
+        rect.setBottomRight(newPoint);
+    } else {
+        QPoint fp = rect.topLeft();
+        int dx = newPoint.x() - fp.x();
+        int dy = newPoint.y() - fp.y();
+        int length = std::max(std::abs(dx),std::abs(dy));
+        newPoint.setX(fp.x()+sgn(dx)*length);
+        newPoint.setY(fp.y()+sgn(dy)*length);
         rect.setBottomRight(newPoint);
     }
 }
@@ -92,23 +104,6 @@ void MyEllipse::drawSelf(QPainter &screen) const
     screen.drawEllipse(rect);
 }
 
-void MyCircle::addPoint(QPoint newPoint)
-{
-    if (firstPoint){
-        firstPoint = false;
-        rect.setTopLeft(newPoint);
-        rect.setBottomRight(newPoint);
-    } else {
-        QPoint fp = rect.topLeft();
-        int dx = newPoint.x() - fp.x();
-        int dy = newPoint.y() - fp.y();
-        int length = std::max(std::abs(dx),std::abs(dy));
-        newPoint.setX(fp.x()+sgn(dx)*length);
-        newPoint.setY(fp.y()+sgn(dy)*length);
-        rect.setBottomRight(newPoint);
-    }
-}
-
 void MyLine::drawSelf(QPainter &screen) const
 {
     if (poly.length()==1){
@@ -135,13 +130,13 @@ Drawable::Drawable(Shape::Type shapeType)
         shape = new MyRectangle();
         break;
     case Shape::Type::square:
-        shape = new MyRectangle();
+        shape = new MySquare();
         break;
     case Shape::Type::ellipse:
         shape = new MyEllipse();
         break;
     case Shape::Type::circle:
-        shape = new MyEllipse();
+        shape = new MyCircle();
         break;
     default:
         shape = new MyLine();

@@ -30,12 +30,18 @@ Painter::Painter(QWidget *parent) :
     QSize windowSize(width/2,height/2);
     //setFixedSize(windowSize);
     setMinimumSize(windowSize);
+    /**********/
 
 }
-
+/**TMP test****/
+QPixmap * testScreenPtr = NULL;
+/*************/
 void Painter::keyPressEvent(QKeyEvent * event)
 {
     //qDebug() << "key = " << event->key();
+    if(isMousePressed)
+        return;
+
     switch (event->key()) {
     case Qt::Key_Escape:
         QCoreApplication::quit();
@@ -50,8 +56,7 @@ void Painter::keyPressEvent(QKeyEvent * event)
         break;
     case Qt::Key_Z:{
         myLines.undo();
-        QString toSend = QString::number(Sender::Tag::undo) + " " + QString::number(Sender::Tag::undo) + " ";
-        Sender::getInstance().send(toSend);
+        Sender::getInstance().send(Sender::Tag::undo);
         update();
     }
         break;
@@ -59,6 +64,13 @@ void Painter::keyPressEvent(QKeyEvent * event)
         static bool test = false;
         stayOnTop(test);
         test = ! test;
+        /*test*/
+        /*postavlja ss za background*/
+        static QPixmap testScreen;
+        QScreen *screen = QGuiApplication::primaryScreen();
+        testScreen = screen->grabWindow(0);
+        testScreenPtr = &testScreen;
+        qDebug() << testScreen.toImage().byteCount();
     }
         break;
     case Qt::Key_1:
@@ -116,9 +128,7 @@ void Painter::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton){
         isMousePressed = false;
         myLines.newLine(myLines.getLines().last().pen, brushSize, nowDrawing);
-        //send -1 -1 to others, so they 'relese the mouse' too
-        QString coordsToSend = QString::number(-1) + " " + QString::number(-1) + " ";
-        Sender::getInstance().send(coordsToSend);
+        Sender::getInstance().send(Sender::Tag::endline);
     }
 }
 
@@ -132,7 +142,6 @@ void Painter::mousePressEvent(QMouseEvent *event)
         break;
     case Qt::RightButton:
         selectColor(event->pos());
-
         break;
     case Qt::MiddleButton:
         moveWidgetCenter(event->globalPos());
@@ -140,8 +149,8 @@ void Painter::mousePressEvent(QMouseEvent *event)
     default:
         break;
     }
-
 }
+
 void Painter::beginNewDrawable(const QPoint & pos)
 {
     //send pen info to others
@@ -178,10 +187,12 @@ QColor Painter::selectColor(QPoint pos)
 void Painter::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
-
     QPainter painter(this);
-    myLines.drawAll(painter);
 
+    if (testScreenPtr){
+        painter.drawPixmap(QPoint(0,0),*testScreenPtr);
+    }
+    myLines.drawAll(painter);
     otherLines.drawAll(painter);
 }
 
@@ -189,28 +200,41 @@ void Painter::stringToPoly(QString str)
 {
     QStringList listStr = str.split(' ', QString::SkipEmptyParts);
     //maybe 0, not 1? if somethings goes wrong
+
     if (listStr.size() <= 1 || listStr.size() % 2){
         return;
+    }
+
+    if (str.length() > 1000 ){
+        qDebug() << "primih sliku";
     }
     //parse incoming string according to first tag
     for (int i = 0; i < listStr.size(); i+=2){
         //qDebug() << "x je " << listStr[i] << ", y je " << listStr[i+1];
         QPoint newPoint(listStr[i].toInt(), listStr[i+1].toInt());
-        if (newPoint.x() == Sender::Tag::color){
+
+        switch (newPoint.x()) {
+        case Sender::Tag::color:
             otherLines.setPenColor(listStr[i+1].toInt(Q_NULLPTR, 16));
-        } else if (newPoint.x() ==  Sender::Tag::width){
+            break;
+        case Sender::Tag::width:
             otherLines.setPenWidth(listStr[i+1].toInt());
-        //if -1 -1, then add to new poly
-        } else if (newPoint.x() ==  Sender::Tag::endline && newPoint.y() == Sender::Tag::endline ){
-            otherLines.newLine(otherDrawing);
-        } else if (newPoint.x() == Sender::Tag::shape) {
+            break;
+        case Sender::Tag::shape:
             otherDrawing = static_cast<Shape::Type>(listStr[i+1].toInt());
             otherLines.changeLastType(otherDrawing);
-        } else if(newPoint.x() == Sender::Tag::undo){
+            break;
+        case Sender::Tag::undo:
             otherLines.undo();
-        } else {
-            //otherwise, it's an odrinary point
+            break;
+        case Sender::Tag::endline:
+            if (newPoint.y() == Sender::Tag::endline) {
+                otherLines.newLine(otherDrawing);
+                break;
+            }
+        default:
             otherLines.addPoint(newPoint, otherDrawing);
+            break;
         }
     }
     update();

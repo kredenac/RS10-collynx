@@ -14,7 +14,7 @@ public:
     enum Type {line, ellipse, circle, rectangle, square};
     virtual void drawSelf(QPainter & screen) const = 0;
     virtual void addPoint(QPoint newPoint) = 0;
-    //virtual void addFirstPoint(QPoint newPoint) = 0;
+    virtual ~Shape() {}
 };
 
 class MyEllipse : public Shape
@@ -23,7 +23,7 @@ public:
     MyEllipse();
     void drawSelf(QPainter & screen) const;
     void addPoint(QPoint newPoint);
-    //void addFirstPoint(QPoint newPoint);
+    ~MyEllipse() {}
     QRect rect;
 protected:
     bool firstPoint;
@@ -31,6 +31,7 @@ protected:
 
 class MyCircle : public MyEllipse
 {
+public:
     void addPoint(QPoint newPoint);
 };
 
@@ -40,7 +41,7 @@ public:
     MyRectangle();
     void drawSelf(QPainter & screen) const;
     void addPoint(QPoint newPoint);
-    //void addFirstPoint(QPoint newPoint);
+    ~MyRectangle() {}
     QRect rect;
 protected:
     bool firstPoint;
@@ -48,6 +49,7 @@ protected:
 
 class MySquare : public MyRectangle
 {
+public:
     void addPoint(QPoint newPoint);
 };
 
@@ -55,7 +57,7 @@ class MyLine : public Shape
 {
     void drawSelf(QPainter & screen) const;
     void addPoint(QPoint newPoint);
-    //void addFirstPoint(QPoint newPoint);
+    ~MyLine() {}
     QPolygon poly;
 };
 
@@ -66,7 +68,7 @@ public:
     Drawable(Shape::Type shapeType);
     void drawOn(QPainter & screen) const;
     Shape * shape;
-    QPen pen; 
+    QPen pen;
 };
 
 class Lines
@@ -76,7 +78,6 @@ public:
     void drawAll(QPainter & screen) const;
     QVector<Drawable>& getLines();
     void changeLastType(Shape::Type shapeType);
-    //void addFirstPoint(QPoint newPoint, Shape::Type shapeType);
     void addPoint(QPoint newPoint, Shape::Type shapeType);
     void newLine(Shape::Type shapeType);
     void newLine(QPen newPen, Shape::Type shapeType);
