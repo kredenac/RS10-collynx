@@ -1,5 +1,9 @@
 #include "lines.h"
 
+template <typename T> int sgn(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 Lines::Lines()
 {
     newLine(Shape::Type::line);
@@ -21,8 +25,14 @@ void Lines::changeLastType(Shape::Type shapeType)
     case Shape::Type::rectangle:
         lines.last().shape = new MyRectangle();
         break;
+    case Shape::Type::square:
+        lines.last().shape = new MySquare();
+        break;
     case Shape::Type::ellipse:
         lines.last().shape = new MyEllipse();
+        break;
+    case Shape::Type::circle:
+        lines.last().shape = new MyCircle();
         break;
     default:
         lines.last().shape = new MyLine();
@@ -59,10 +69,44 @@ void MyRectangle::addPoint(QPoint newPoint)
     }
 }
 
+void MySquare::addPoint(QPoint newPoint)
+{
+    if (firstPoint){
+        firstPoint = false;
+        rect.setTopLeft(newPoint);
+        rect.setBottomRight(newPoint);
+    } else {
+        QPoint fp = rect.topLeft();
+        int dx = newPoint.x() - fp.x();
+        int dy = newPoint.y() - fp.y();
+        int length = std::max(std::abs(dx),std::abs(dy));
+        newPoint.setX(fp.x()+sgn(dx)*length);
+        newPoint.setY(fp.y()+sgn(dy)*length);
+        rect.setBottomRight(newPoint);
+    }
+}
+
 void MyEllipse::drawSelf(QPainter &screen) const
 {
     //qDebug() << rect.topLeft();
     screen.drawEllipse(rect);
+}
+
+void MyCircle::addPoint(QPoint newPoint)
+{
+    if (firstPoint){
+        firstPoint = false;
+        rect.setTopLeft(newPoint);
+        rect.setBottomRight(newPoint);
+    } else {
+        QPoint fp = rect.topLeft();
+        int dx = newPoint.x() - fp.x();
+        int dy = newPoint.y() - fp.y();
+        int length = std::max(std::abs(dx),std::abs(dy));
+        newPoint.setX(fp.x()+sgn(dx)*length);
+        newPoint.setY(fp.y()+sgn(dy)*length);
+        rect.setBottomRight(newPoint);
+    }
 }
 
 void MyLine::drawSelf(QPainter &screen) const
@@ -90,7 +134,13 @@ Drawable::Drawable(Shape::Type shapeType)
     case Shape::Type::rectangle:
         shape = new MyRectangle();
         break;
+    case Shape::Type::square:
+        shape = new MyRectangle();
+        break;
     case Shape::Type::ellipse:
+        shape = new MyEllipse();
+        break;
+    case Shape::Type::circle:
         shape = new MyEllipse();
         break;
     default:

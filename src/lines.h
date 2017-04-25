@@ -11,7 +11,7 @@
 class Shape
 {
 public:
-    enum Type {line, ellipse, rectangle};
+    enum Type {line, ellipse, circle, rectangle, square};
     virtual void drawSelf(QPainter & screen) const = 0;
     virtual void addPoint(QPoint newPoint) = 0;
     //virtual void addFirstPoint(QPoint newPoint) = 0;
@@ -25,8 +25,13 @@ public:
     void addPoint(QPoint newPoint);
     //void addFirstPoint(QPoint newPoint);
     QRect rect;
-private:
+protected:
     bool firstPoint;
+};
+
+class MyCircle : public MyEllipse
+{
+    void addPoint(QPoint newPoint);
 };
 
 class MyRectangle : public Shape
@@ -37,8 +42,13 @@ public:
     void addPoint(QPoint newPoint);
     //void addFirstPoint(QPoint newPoint);
     QRect rect;
-private:
+protected:
     bool firstPoint;
+};
+
+class MySquare : public MyRectangle
+{
+    void addPoint(QPoint newPoint);
 };
 
 class MyLine : public Shape

@@ -73,6 +73,14 @@ void Painter::keyPressEvent(QKeyEvent * event)
         nowDrawing = Shape::Type::rectangle;
         myLines.changeLastType(nowDrawing);
         break;
+    case Qt::Key_4:
+        nowDrawing = Shape::Type::circle;
+        myLines.changeLastType(nowDrawing);
+        break;
+    case Qt::Key_5:
+        nowDrawing = Shape::Type::square;
+        myLines.changeLastType(nowDrawing);
+        break;
     default:
         break;
     }
