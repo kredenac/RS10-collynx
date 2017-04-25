@@ -13,11 +13,12 @@ class Sender : public QObject
     Q_OBJECT
 public:
     enum Tag{
-        endline = -1, color = -2, width = -3, shape = -4, undo = -5
+        endline = -6969, color = -6966, width = -6696, shape = -6999, undo = -9699
     };
     bool send(QString toSend);
     bool send(QPoint tosend);
     void send(QPen &pen);
+    void send(Tag t);
     void send(Shape::Type shapeType);
     bool makeConnection();
     static Sender & getInstance();

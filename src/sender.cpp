@@ -12,6 +12,11 @@ bool Sender::makeConnection()
     connect(mySocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
     return true;
 }
+void Sender::send(Sender::Tag t)
+{
+    QString coordsToSend = QString::number(t) + " " + QString::number(t) + " ";
+    send(coordsToSend);
+}
 
 void Sender::send(QPen &pen)
 {
