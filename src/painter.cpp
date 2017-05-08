@@ -3,8 +3,16 @@
 
 Painter::Painter(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line)
+    ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line), c(parent)
 {
+
+    // TODO foreach ...
+    QObject::connect(c.getButton(1), SIGNAL(clicked()), this, SLOT(clickedButton()));
+    QObject::connect(c.getButton(2), SIGNAL(clicked()), this, SLOT(clickedButton()));
+    QObject::connect(c.getButton(3), SIGNAL(clicked()), this, SLOT(clickedButton()));
+    QObject::connect(c.getButton(4), SIGNAL(clicked()), this, SLOT(clickedButton()));
+    QObject::connect(c.getButton(5), SIGNAL(clicked()), this, SLOT(clickedButton()));
+
     ui->setupUi(this);
 
     isMousePressed = false;
@@ -32,7 +40,10 @@ Painter::Painter(QWidget *parent) :
     setMinimumSize(windowSize);
     /**********/
 
+
+
 }
+
 /**TMP test****/
 QPixmap * testScreenPtr = NULL;
 /*************/
@@ -138,10 +149,12 @@ void Painter::mousePressEvent(QMouseEvent *event)
     case Qt::LeftButton:
         isMousePressed = true;
         beginNewDrawable(event->pos());
+        c.hide();
         update();
         break;
     case Qt::RightButton:
-        selectColor(event->pos());
+        c.cshow(event->pos(),width(),height());
+//        selectColor(event->pos());
         break;
     case Qt::MiddleButton:
         moveWidgetCenter(event->globalPos());
@@ -240,6 +253,35 @@ void Painter::stringToPoly(QString str)
     update();
 }
 
+void Painter::clickedButton()
+{
+    QString name = ((QPushButton*)sender())->objectName();
+    // HACK
+    char index = name[name.size()-1].unicode();
+    switch(index){
+        case '1':
+            nowDrawing = Shape::Type::line;
+            myLines.changeLastType(nowDrawing);
+            break;
+        case '2':
+            nowDrawing = Shape::Type::ellipse;
+            myLines.changeLastType(nowDrawing);
+            break;
+        case '3':
+            nowDrawing = Shape::Type::rectangle;
+            myLines.changeLastType(nowDrawing);
+            break;
+        case '4':
+            nowDrawing = Shape::Type::circle;
+            myLines.changeLastType(nowDrawing);
+            break;
+        case '5':
+            nowDrawing = Shape::Type::square;
+            myLines.changeLastType(nowDrawing);
+            break;
+    }
+    c.hide();
+}
 
 Painter::~Painter()
 {

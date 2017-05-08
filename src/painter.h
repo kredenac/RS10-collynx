@@ -4,12 +4,14 @@ class Painter;
 #include "sender.h"
 #include "lines.h"
 #include "transform.h"
+#include "chooser.h"
 #include <QMainWindow>
 #include <QtGui>
 #include <QtCore>
 #include <math.h>
 #include <QVector>
 #include <QColorDialog>
+#include <QPushButton>
 
 namespace Ui {
 class Painter;
@@ -26,6 +28,9 @@ public:
     Lines otherLines;
     ~Painter();
 
+public slots:
+    void clickedButton();
+
 private:
     Ui::Painter *ui;
     int brushSize;
@@ -35,6 +40,7 @@ private:
     void moveWidgetCenter(const QPoint &globalPos);
     void beginNewDrawable(const QPoint &pos);
     void stayOnTop(bool setTop);
+    chooser c;
 protected:
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
