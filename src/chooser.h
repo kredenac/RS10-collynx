@@ -16,8 +16,9 @@ class chooser : public QWidget
 public:
     explicit chooser(QWidget *parent = 0);
     ~chooser();
-    void cshow(QPoint pos, int w, int h);
+    void cshow(QPoint pos, int w, int h, QColor col);
     QPushButton* getButton(int index);
+    int getButtonNum();
 
 private:
     Ui::chooser *ui;

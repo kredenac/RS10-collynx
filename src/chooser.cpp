@@ -19,7 +19,7 @@ chooser::~chooser()
     delete ui;
 }
 
-void chooser::cshow(QPoint pos, int w, int h)
+void chooser::cshow(QPoint pos, int w, int h, QColor col)
 {
     int y = pos.y();
     int x = pos.x();
@@ -31,34 +31,21 @@ void chooser::cshow(QPoint pos, int w, int h)
     if(x + width() > w)
         xOffset = width();
 
+    int r,g,b;
+    col.getRgb(&r,&g,&b);
+    QString rgba = QString::number(r) + "," + QString::number(g) + "," + QString::number(b) + ", 0.5 ";
+
+    setStyleSheet("background : rgba("+rgba+");");
     move(pos.x() - xOffset, pos.y() - yOffset);
     show();
 }
 
-// FIXME !! ! !
-QPushButton* chooser::getButton(int index){
-    // TODO foreach ...
-    switch (index) {
-    case 1:
-        return ui->pushButton_1;
-        break;
-    case 2:
-        return ui->pushButton_2;
-        break;
-    case 3:
-        return ui->pushButton_3;
-        break;
-    case 4:
-        return ui->pushButton_4;
-        break;
-    case 5:
-        return ui->pushButton_5;
-        break;
-    default:
-        return nullptr;
-        break;
-    }
+int chooser::getButtonNum(){
+    return findChildren<QPushButton*>().size();
+}
 
+QPushButton* chooser::getButton(int index){
+    return findChildren<QPushButton*>().at(index-1);
 }
 
 

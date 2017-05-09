@@ -6,12 +6,9 @@ Painter::Painter(QWidget *parent) :
     ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line), c(parent)
 {
 
-    // TODO foreach ...
-    QObject::connect(c.getButton(1), SIGNAL(clicked()), this, SLOT(clickedButton()));
-    QObject::connect(c.getButton(2), SIGNAL(clicked()), this, SLOT(clickedButton()));
-    QObject::connect(c.getButton(3), SIGNAL(clicked()), this, SLOT(clickedButton()));
-    QObject::connect(c.getButton(4), SIGNAL(clicked()), this, SLOT(clickedButton()));
-    QObject::connect(c.getButton(5), SIGNAL(clicked()), this, SLOT(clickedButton()));
+    for(int i=1; i<=c.getButtonNum(); i++){
+        QObject::connect(c.getButton(i), SIGNAL(clicked()), this, SLOT(clickedButton()));
+    }
 
     ui->setupUi(this);
 
@@ -153,8 +150,7 @@ void Painter::mousePressEvent(QMouseEvent *event)
         update();
         break;
     case Qt::RightButton:
-        c.cshow(event->pos(),width(),height());
-//        selectColor(event->pos());
+        c.cshow(event->pos(),width(),height(),myLines.getLines().last().pen.color());
         break;
     case Qt::MiddleButton:
         moveWidgetCenter(event->globalPos());
@@ -256,7 +252,8 @@ void Painter::stringToPoly(QString str)
 void Painter::clickedButton()
 {
     QString name = ((QPushButton*)sender())->objectName();
-    // HACK
+
+    // HACK (unicode)
     char index = name[name.size()-1].unicode();
     switch(index){
         case '1':
@@ -278,6 +275,10 @@ void Painter::clickedButton()
         case '5':
             nowDrawing = Shape::Type::square;
             myLines.changeLastType(nowDrawing);
+            break;
+        case '6':
+            // TODO fix position, and change dialog in function
+            selectColor(QPoint(100,100));
             break;
     }
     c.hide();
