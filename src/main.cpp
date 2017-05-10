@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
     window->setAttribute( Qt::WA_TranslucentBackground );
     window->setWindowTitle(QString::fromUtf8("ColLynx"));
-    window->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+    window->setWindowFlags(Qt::FramelessWindowHint /*| Qt::WindowStaysOnTopHint*/);
 
     Painter w(window);
     Sender::getInstance().setPainterFriend(&w);

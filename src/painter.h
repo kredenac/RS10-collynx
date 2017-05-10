@@ -41,7 +41,10 @@ private:
     void beginNewDrawable(const QPoint &pos);
     void stayOnTop(bool setTop);
     chooser c;
+    bool alwaysOnTop;
 protected:
+    void focusInEvent(QFocusEvent *event);
+    void focusOutEvent(QFocusEvent *event);
     void paintEvent(QPaintEvent *event);
     void mousePressEvent(QMouseEvent *event);
     void mouseMoveEvent(QMouseEvent *event );

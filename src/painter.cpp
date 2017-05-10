@@ -3,7 +3,7 @@
 
 Painter::Painter(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line), c(parent)
+    ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line), c(parent), alwaysOnTop(false)
 {
 
     for(int i=1; i<=c.getButtonNum(); i++){
@@ -36,10 +36,46 @@ Painter::Painter(QWidget *parent) :
     //setFixedSize(windowSize);
     setMinimumSize(windowSize);
     /**********/
-
-
-
 }
+//FIXME iz nekog razloga mora da se klikne da bi se video window kad ulazi u focus
+void Painter::focusInEvent(QFocusEvent *event)
+{
+    qDebug() << "always on top " << alwaysOnTop;
+    if (!alwaysOnTop) return;
+    static int i = 0;
+    if (event->gotFocus()){
+        qDebug() << "got focus" << i++;
+        //da registruje input
+
+        this->parentWidget()->setWindowFlags(
+                    this->parentWidget()->windowFlags() & ~Qt::WindowTransparentForInput);
+        this->parentWidget()->show();
+
+
+        //this->parentWidget()->update();
+        //this->show();
+        //this->setFocus();
+
+        //moveWidgetCenter(this->parentWidget()->pos() + QPoint(-5,-5) );
+    }
+}
+
+void Painter::focusOutEvent(QFocusEvent *event)
+{
+    if (!alwaysOnTop) return;
+    static int i=0;
+    if(event->lostFocus()){
+        qDebug() << "lost focus" << i++;
+        //da ignorise input i prosledjuje onome sto je iza
+        this->parentWidget()->setWindowFlags(
+                    this->parentWidget()->windowFlags() | Qt::WindowTransparentForInput);
+        this->parentWidget()->show();
+        //this->show();
+
+    }
+}
+
+
 
 /**TMP test****/
 QPixmap * testScreenPtr = NULL;
@@ -81,13 +117,13 @@ void Painter::keyPressEvent(QKeyEvent * event)
         update();
     }
         break;
-    case Qt::Key_T:{
-        static bool test = false;
-        stayOnTop(test);
-        test = ! test;
+    case Qt::Key_T:
+        alwaysOnTop = !alwaysOnTop;
+        stayOnTop(alwaysOnTop);
+        break;
+    case Qt::Key_S:
         hide();
         QTimer::singleShot(500, this, SLOT(snapshot()));
-    }
         break;
     case Qt::Key_1:
         nowDrawing = Shape::Type::line;
