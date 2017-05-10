@@ -11,12 +11,14 @@ int main(int argc, char *argv[])
 
     QMainWindow *window = new QMainWindow();
 
-    Painter w(window);
-    Sender::getInstance().setPainterFriend(&w);
+
 
     window->setAttribute( Qt::WA_TranslucentBackground );
     window->setWindowTitle(QString::fromUtf8("ColLynx"));
     window->setWindowFlags(Qt::FramelessWindowHint | Qt::WindowStaysOnTopHint);
+
+    Painter w(window);
+    Sender::getInstance().setPainterFriend(&w);
 
     //window->setWindowFlags();
     window->setCentralWidget(&w);

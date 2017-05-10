@@ -43,6 +43,19 @@ Painter::Painter(QWidget *parent) :
 
 /**TMP test****/
 QPixmap * testScreenPtr = NULL;
+void Painter::snapshot(){
+    static QPixmap testScreen;
+    QScreen *screen = QGuiApplication::primaryScreen();
+
+    testScreen = screen->grabWindow(0)/*.scaledToHeight(720,Qt::FastTransformation);*/;
+    //testScreenPtr = &testScreen;
+    QImage img = testScreen.toImage().convertToFormat(QImage::Format_Indexed8, Qt::AutoColor);
+    testScreen.fromImage(img, Qt::AutoColor);
+    testScreenPtr = &testScreen;
+    show();
+    qDebug() << img.byteCount() << " " << img.format();/*testScreen.toImage().height() << " " << testScreen.toImage().width();*/
+}
+
 /*************/
 void Painter::keyPressEvent(QKeyEvent * event)
 {
@@ -72,13 +85,8 @@ void Painter::keyPressEvent(QKeyEvent * event)
         static bool test = false;
         stayOnTop(test);
         test = ! test;
-        /*test*/
-        /*postavlja ss za background*/
-        static QPixmap testScreen;
-        QScreen *screen = QGuiApplication::primaryScreen();
-        testScreen = screen->grabWindow(0);
-        testScreenPtr = &testScreen;
-        qDebug() << testScreen.toImage().byteCount();
+        hide();
+        QTimer::singleShot(500, this, SLOT(snapshot()));
     }
         break;
     case Qt::Key_1:

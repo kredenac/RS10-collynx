@@ -30,7 +30,7 @@ public:
 
 public slots:
     void clickedButton();
-
+    void snapshot();
 private:
     Ui::Painter *ui;
     int brushSize;
