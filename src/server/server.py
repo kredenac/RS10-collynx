@@ -2,11 +2,17 @@
 
 import socket, select
 
+IDs = []
 #Function to broadcast chat messages to all connected clients
 def broadcast_data (sock, message):
+    if message[0:5] == "-9696":
+        myself = True
+    else:
+        myself = False
     #Do not send the message to master socket and the client who has send us the message
     for socket in CONNECTION_LIST:
-        if socket != server_socket and socket != sock :
+        #socket != server_socket and
+        if socket != server_socket and (socket != sock or myself) :
             try :
                 socket.send(message)
             except :
@@ -43,7 +49,10 @@ if __name__ == "__main__":
                 sockfd, addr = server_socket.accept()
                 CONNECTION_LIST.append(sockfd)
                 print "Client (%s, %s) connected" % addr
-
+                IDs.append(str(addr[1]))
+                
+                mess = reduce( (lambda x, y: x + "." + y), IDs )
+                broadcast_data(sock, "-9696 "+mess+" <3 ")
                 #broadcast_data(sockfd, "[%s:%s] entered room\n" % addr)
 
             #Some incoming message from a client

@@ -12,33 +12,33 @@ bool Sender::makeConnection()
     connect(mySocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
     return true;
 }
-void Sender::send(Sender::Tag t)
+void Sender::send(Sender::Tag t, QString id)
 {
-    QString coordsToSend = QString::number(t) + " " + QString::number(t) + " ";
+    QString coordsToSend = QString::number(t) + " " + QString::number(t) + " " + id + " ";
     send(coordsToSend);
 }
 
-void Sender::send(QPen &pen)
+void Sender::send(QPen &pen, QString id)
 {
     //qDebug() << mySocket->localAddress().toString() << mySocket->localPort();
     //QByteArray ba;
     QColor col(pen.color());
 
-    QString toSend = QString::number(Tag::color) + " " + col.name().remove(0,1) + " ";
+    QString toSend = QString::number(Tag::color) + " " + col.name().remove(0,1) + " " + id + " ";
     send(toSend);
-    toSend = QString::number(Tag::width) + " " + QString::number(pen.width()) + " ";
+    toSend = QString::number(Tag::width) + " " + QString::number(pen.width()) + " " + id + " ";
     send(toSend);
 }
 
-bool Sender::send(QPoint toSend)
+bool Sender::send(QPoint toSend, QString id)
 {
-    QString coordsToSend = QString::number(toSend.x()) + " " + QString::number(toSend.y()) + " ";
+    QString coordsToSend = QString::number(toSend.x()) + " " + QString::number(toSend.y()) + " " + id + " ";
     send(coordsToSend);
     return true;
 }
-void Sender::send(Shape::Type shapeType)
+void Sender::send(Shape::Type shapeType, QString id)
 {
-     QString toSend = QString::number(Tag::shape) + " " + QString::number(shapeType) + " ";
+     QString toSend = QString::number(Tag::shape) + " " + QString::number(shapeType) + " " + id + " ";
      send(toSend);
 }
 

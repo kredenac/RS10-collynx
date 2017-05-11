@@ -25,7 +25,10 @@ public:
     explicit Painter(QWidget *parent = 0);
     void stringToPoly(QString str);
     Lines myLines;
-    Lines otherLines;
+    //Lines otherLines;
+    QHash<QString, Lines> otherLines;
+    void setId(QString id);
+    QString id();
     ~Painter();
 
 public slots:
@@ -38,10 +41,11 @@ private:
     Shape::Type nowDrawing;
     Shape::Type otherDrawing;
     void moveWidgetCenter(const QPoint &globalPos);
-    void beginNewDrawable(const QPoint &pos);
+    void beginNewDrawable(const QPoint &pos, QString id);
     void stayOnTop(bool setTop);
     chooser c;
     bool alwaysOnTop;
+    QString _id;
 protected:
     void focusInEvent(QFocusEvent *event);
     void focusOutEvent(QFocusEvent *event);

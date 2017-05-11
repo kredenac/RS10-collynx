@@ -5,7 +5,7 @@ Painter::Painter(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line), c(parent), alwaysOnTop(false)
 {
-
+    _id = "";
     for(int i=1; i<=c.getButtonNum(); i++){
         QObject::connect(c.getButton(i), SIGNAL(clicked()), this, SLOT(clickedButton()));
     }
@@ -113,7 +113,7 @@ void Painter::keyPressEvent(QKeyEvent * event)
         break;
     case Qt::Key_Z:{
         myLines.undo();
-        Sender::getInstance().send(Sender::Tag::undo);
+        Sender::getInstance().send(Sender::Tag::undo, id());
         update();
     }
         break;
@@ -169,7 +169,7 @@ void Painter::mouseMoveEvent(QMouseEvent * event )
     if (isMousePressed){
         QPoint newPoint = event->pos();
 
-        Sender::getInstance().send(newPoint);
+        Sender::getInstance().send(newPoint, id());
         myLines.addPoint(newPoint, nowDrawing);
         update();
     }
@@ -180,7 +180,7 @@ void Painter::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton){
         isMousePressed = false;
         myLines.newLine(myLines.getLines().last().pen, brushSize, nowDrawing);
-        Sender::getInstance().send(Sender::Tag::endline);
+        Sender::getInstance().send(Sender::Tag::endline, id());
     }
 }
 
@@ -189,7 +189,7 @@ void Painter::mousePressEvent(QMouseEvent *event)
     switch (event->button()) {
     case Qt::LeftButton:
         isMousePressed = true;
-        beginNewDrawable(event->pos());
+        beginNewDrawable(event->pos(), id());
         c.hide();
         update();
         break;
@@ -204,15 +204,15 @@ void Painter::mousePressEvent(QMouseEvent *event)
     }
 }
 
-void Painter::beginNewDrawable(const QPoint & pos)
+void Painter::beginNewDrawable(const QPoint & pos, QString id)
 {
     //send pen info to others
     //qDebug() << event->pos();
     QPoint p(pos);
     myLines.addPoint(p, nowDrawing);
-    Sender::getInstance().send(nowDrawing);
-    Sender::getInstance().send(myLines.getLines().last().pen);
-    Sender::getInstance().send(pos);
+    Sender::getInstance().send(nowDrawing, id);
+    Sender::getInstance().send(myLines.getLines().last().pen, id);
+    Sender::getInstance().send(pos, id);
 }
 
 void Painter::moveWidgetCenter(const QPoint& globalPos)
@@ -246,7 +246,18 @@ void Painter::paintEvent(QPaintEvent *event)
         painter.drawPixmap(QPoint(0,0),*testScreenPtr);
     }
     myLines.drawAll(painter);
-    otherLines.drawAll(painter);
+
+    QHash<QString, Lines>::const_iterator i = otherLines.constBegin();
+    while (i != otherLines.constEnd()) {
+        i.value().drawAll(painter);
+        ++i;
+    }
+
+//    QHashIterator<QString, int> i(otherLines);
+//    while (i.hasNext()) {
+//        i.next();
+//        i.value().drawAll(painter);
+//    }
 }
 
 void Painter::stringToPoly(QString str)
@@ -254,7 +265,7 @@ void Painter::stringToPoly(QString str)
     QStringList listStr = str.split(' ', QString::SkipEmptyParts);
     //maybe 0, not 1? if somethings goes wrong
 
-    if (listStr.size() <= 1 || listStr.size() % 2){
+    if (listStr.size() <= 2 || listStr.size() % 3){
         return;
     }
 
@@ -262,35 +273,56 @@ void Painter::stringToPoly(QString str)
         qDebug() << "primih sliku";
     }
     //parse incoming string according to first tag
-    for (int i = 0; i < listStr.size(); i+=2){
+    for (int i = 0; i < listStr.size(); i+=3){
         //qDebug() << "x je " << listStr[i] << ", y je " << listStr[i+1];
         QPoint newPoint(listStr[i].toInt(), listStr[i+1].toInt());
-
+        qDebug() << newPoint.x() << " newpoint.x";
         switch (newPoint.x()) {
         case Sender::Tag::color:
-            otherLines.setPenColor(listStr[i+1].toInt(Q_NULLPTR, 16));
+            otherLines[listStr[i+2]].setPenColor(listStr[i+1].toInt(Q_NULLPTR, 16));
             break;
         case Sender::Tag::width:
-            otherLines.setPenWidth(listStr[i+1].toInt());
+            otherLines[listStr[i+2]].setPenWidth(listStr[i+1].toInt());
             break;
         case Sender::Tag::shape:
             otherDrawing = static_cast<Shape::Type>(listStr[i+1].toInt());
-            otherLines.changeLastType(otherDrawing);
+            otherLines[listStr[i+2]].changeLastType(otherDrawing);
             break;
         case Sender::Tag::undo:
-            otherLines.undo();
+            otherLines[listStr[i+2]].undo();
             break;
         case Sender::Tag::endline:
             if (newPoint.y() == Sender::Tag::endline) {
-                otherLines.newLine(otherDrawing);
+                otherLines[listStr[i+2]].newLine(otherDrawing);
                 break;
             }
+        case Sender::Tag::id:{
+            QStringList ids = listStr[i+1].split('.', QString::SkipEmptyParts);
+            if(id() == ""){
+                setId(ids[ids.size()-1]);
+                auto i = ids.constBegin();
+                for(;i!=ids.constEnd()-1;i++)
+                    otherLines.insert(*i, Lines());
+            } else {
+                otherLines.insert(ids[ids.size()-1], Lines());
+            }
+            //otherLines.insert(listStr[i+1], Lines());
+            qDebug() << listStr[i+1] << "<--------------";
+            break;}
         default:
-            otherLines.addPoint(newPoint, otherDrawing);
+            otherLines[listStr[i+2]].addPoint(newPoint, otherDrawing);
             break;
         }
     }
     update();
+}
+
+void Painter::setId(QString id){
+    _id = id;
+}
+
+QString Painter::id(){
+    return _id;
 }
 
 void Painter::clickedButton()
