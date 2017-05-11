@@ -79,13 +79,18 @@ void Painter::focusOutEvent(QFocusEvent *event)
 
 /**TMP test****/
 QPixmap * testScreenPtr = NULL;
+
 void Painter::snapshot(){
     static QPixmap testScreen;
     QScreen *screen = QGuiApplication::primaryScreen();
-
-    testScreen = screen->grabWindow(0)/*.scaledToHeight(720,Qt::FastTransformation);*/;
+    //QRect  screenGeometry = screen->geometry();
+    testScreen = screen->grabWindow(0)/*.scaledToHeight(screenGeometry.height()*2/3,Qt::FastTransformation)*/;
     //testScreenPtr = &testScreen;
     QImage img = testScreen.toImage().convertToFormat(QImage::Format_Indexed8, Qt::AutoColor);
+    QImageWriter imgWriter("fajl", "PNG");
+    //imgWriter.setCompression(4);
+    //~250Kb bez kompresije, full rezolucija, slacemo fajl(u buildu pod nazivom fajl) koji je sacuvan, umesto img
+    qDebug() << "----->" << imgWriter.compression() << " success: " << imgWriter.write(img);
     testScreen.fromImage(img, Qt::AutoColor);
     testScreenPtr = &testScreen;
     show();
@@ -123,7 +128,11 @@ void Painter::keyPressEvent(QKeyEvent * event)
         break;
     case Qt::Key_S:
         hide();
-        QTimer::singleShot(500, this, SLOT(snapshot()));
+        //Zavisno od velicine prozora aplikacije treba podesiti prvi parametar, sto je veci prozor treba vise vremena,
+        //ne znam kako to utice na brzinu hide-ovanja prozora, ali ocigledno utice. Prvobitno je bilo 500ms, tako da
+        //ovih 10 je super ubrzanje, a radi na fullscreen 15". Ko ima veci ekran i procita ovo neka uhvati screenshot
+        //na fullscreenu i ako se vidi Collynx, povecaj za 5ms :)
+        QTimer::singleShot(10, this, SLOT(snapshot()));
         break;
     case Qt::Key_1:
         nowDrawing = Shape::Type::line;
@@ -243,7 +252,8 @@ void Painter::paintEvent(QPaintEvent *event)
     QPainter painter(this);
 
     if (testScreenPtr){
-        painter.drawPixmap(QPoint(0,0),*testScreenPtr);
+        //painter.drawPixmap(QPoint(0,0),*testScreenPtr);
+        painter.drawPixmap(0,0,this->size().width(), this->size().height(),*testScreenPtr);
     }
     myLines.drawAll(painter);
 
