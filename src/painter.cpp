@@ -6,6 +6,7 @@
 Painter::Painter(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line), c(parent), alwaysOnTop(false)
+//    userNames{"Fox","Hawk","Wolf","Eagle","Turtle"}
 {
     myID = "";
     for(int i=1; i<=c.getButtonNum(); i++){
@@ -38,28 +39,22 @@ Painter::Painter(QWidget *parent) :
     //setFixedSize(windowSize);
     setMinimumSize(windowSize);
     /**********/
+    createFrame();
+    addCheckbox(usersFrame, "My Layer");
+}
 
-
+void Painter::createFrame()
+{
     int cBoxWidth = 100;
     int cBoxHeight = 25;
     int margin = 5;
 
-
-    frame().setGeometry(this->geometry().width() - cBoxWidth - 80 - 3*margin, margin,
+    frame().setGeometry(geometry().width() - cBoxWidth - 80 - 3*margin, margin,
                        cBoxWidth + 2*margin, margin + (margin+cBoxHeight));
     frame().setParent(this);
     frame().show();
-
-    QCheckBox *dynamic = new QCheckBox("My layer");
-
-    qDebug() << dynamic->text();
-//    QObject::connect(dynamic, SIGNAL(dynamic->toggled()), this, SLOT(userToggled()));
-
-    dynamic->setParent(&frame());
-    dynamic->setStyleSheet("QCheckBox::indicator { width:25px; height: 25px; }");
-    dynamic->setGeometry(margin, margin, cBoxWidth, cBoxHeight);
-    dynamic->show();
 }
+
 //FIXME iz nekog razloga mora da se klikne da bi se video window kad ulazi u focus
 void Painter::focusInEvent(QFocusEvent *event)
 {
@@ -177,6 +172,9 @@ void Painter::keyPressEvent(QKeyEvent * event)
         nowDrawing = Shape::Type::square;
         myLines.changeLastType(nowDrawing);
         break;
+    case Qt::Key_A:
+        addCheckbox(usersFrame, "TEST");
+        break;
     default:
         break;
     }
@@ -282,23 +280,15 @@ void Painter::paintEvent(QPaintEvent *event)
 
     QHash<QString, Lines>::const_iterator i = otherLines.constBegin();
     while (i != otherLines.constEnd()) {
-//        if(moze_dacrta)
         i.value().drawAll(painter);
         ++i;
     }
-
-//    QHashIterator<QString, int> i(otherLines);
-//    while (i.hasNext()) {
-//        i.next();
-//        i.value().drawAll(painter);
-//    }
 }
 
 void Painter::stringToPoly(QString str)
 {
     QStringList listStr = str.split(' ', QString::SkipEmptyParts);
     //maybe 0, not 1? if somethings goes wrong
-
     if (listStr.size() <= 2 || listStr.size() % 3){
         return;
     }
@@ -333,9 +323,13 @@ void Painter::stringToPoly(QString str)
         case Sender::Tag::id:{
             QStringList ids = listStr[i+1].split('.', QString::SkipEmptyParts);
             if(id() == ""){
+
                 setId(ids[ids.size()-1]);
-                auto i = ids.constBegin();
-                for(;i!=ids.constEnd()-1;i++){
+
+
+                //if this user isnt the first one connected
+                //add others to hash map
+                for(auto i = ids.constBegin(); i!=ids.constEnd()-1; ++i){
                     otherLines.insert(*i, Lines());
                     addCheckbox(frame(),*i);
                 }
@@ -354,11 +348,13 @@ void Painter::stringToPoly(QString str)
     update();
 }
 
-void Painter::setId(QString id){
+void Painter::setId(QString id)
+{
     myID = id;
 }
 
-QString Painter::id(){
+QString Painter::id()
+{
     return myID;
 }
 
@@ -409,25 +405,25 @@ void Painter::addCheckbox(QFrame &f, QString name)
     int margin = 5;
     int index = f.children().size();
 
-//    QVector<QString>{"Fox","Hawk","Wolf","Eagle","Turtle"};
+    //QVector<QString>{"Fox","Hawk","Wolf","Eagle","Turtle"};
     f.setGeometry(f.x(), margin,
                        cBoxWidth + 2*margin, margin + (margin+cBoxHeight) * (index+1));
 
     QCheckBox *dynamic = new QCheckBox(name);
-//    QObject::connect(dynamic, SIGNAL(dynamic->clicked()), this, SLOT(userToggled()) );
+    connect(dynamic, SIGNAL(stateChanged(int)), this, SLOT(userToggled(int)) );
+
     dynamic->setParent(&f);
     dynamic->setStyleSheet("QCheckBox::indicator { width:25px; height: 25px; }");
     dynamic->setGeometry(margin, margin + (margin + cBoxHeight)*index, cBoxWidth, cBoxHeight);
     dynamic->setChecked(true);
     dynamic->show();
-
-
-
 }
 
-void Painter::userToggled()
+void Painter::userToggled(int n)
 {
-    qDebug() << "pozvo";
+    Q_UNUSED(n);
+    auto myBox = (QCheckBox*)(*usersFrame.children().begin());
+    myLines.isShown = myBox->isChecked();
     for(auto i = usersFrame.children().begin()+1; i!=usersFrame.children().end(); ++i){
         QCheckBox *cb = (QCheckBox*)(*i);
         if(cb->isChecked()){
@@ -436,6 +432,7 @@ void Painter::userToggled()
             otherLines[cb->text()].isShown = false;
         }
     }
+    this->update();
 }
 
 Painter::~Painter()

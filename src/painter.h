@@ -35,7 +35,7 @@ public:
     QFrame &frame();
     void addCheckbox(QFrame &f, QString name);
 public slots:
-    void userToggled();
+    void userToggled(int n);
     void clickedButton();
     void snapshot();
 private:
@@ -51,6 +51,7 @@ private:
     bool alwaysOnTop;
     QString myID;
     QFrame usersFrame;
+    void createFrame();
 protected:
     void focusInEvent(QFocusEvent *event);
     void focusOutEvent(QFocusEvent *event);
