@@ -1,11 +1,13 @@
 #include "painter.h"
 #include "ui_painter.h"
+#include <QCheckBox>
+#include <QFrame>
 
 Painter::Painter(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line), c(parent), alwaysOnTop(false)
 {
-    _id = "";
+    myID = "";
     for(int i=1; i<=c.getButtonNum(); i++){
         QObject::connect(c.getButton(i), SIGNAL(clicked()), this, SLOT(clickedButton()));
     }
@@ -36,6 +38,27 @@ Painter::Painter(QWidget *parent) :
     //setFixedSize(windowSize);
     setMinimumSize(windowSize);
     /**********/
+
+
+    int cBoxWidth = 100;
+    int cBoxHeight = 25;
+    int margin = 5;
+
+
+    frame().setGeometry(this->geometry().width() - cBoxWidth - 80 - 3*margin, margin,
+                       cBoxWidth + 2*margin, margin + (margin+cBoxHeight));
+    frame().setParent(this);
+    frame().show();
+
+    QCheckBox *dynamic = new QCheckBox("My layer");
+
+    qDebug() << dynamic->text();
+//    QObject::connect(dynamic, SIGNAL(dynamic->toggled()), this, SLOT(userToggled()));
+
+    dynamic->setParent(&frame());
+    dynamic->setStyleSheet("QCheckBox::indicator { width:25px; height: 25px; }");
+    dynamic->setGeometry(margin, margin, cBoxWidth, cBoxHeight);
+    dynamic->show();
 }
 //FIXME iz nekog razloga mora da se klikne da bi se video window kad ulazi u focus
 void Painter::focusInEvent(QFocusEvent *event)
@@ -259,6 +282,7 @@ void Painter::paintEvent(QPaintEvent *event)
 
     QHash<QString, Lines>::const_iterator i = otherLines.constBegin();
     while (i != otherLines.constEnd()) {
+//        if(moze_dacrta)
         i.value().drawAll(painter);
         ++i;
     }
@@ -311,10 +335,13 @@ void Painter::stringToPoly(QString str)
             if(id() == ""){
                 setId(ids[ids.size()-1]);
                 auto i = ids.constBegin();
-                for(;i!=ids.constEnd()-1;i++)
+                for(;i!=ids.constEnd()-1;i++){
                     otherLines.insert(*i, Lines());
+                    addCheckbox(frame(),*i);
+                }
             } else {
                 otherLines.insert(ids[ids.size()-1], Lines());
+                addCheckbox(frame(),ids[ids.size()-1]);
             }
             //otherLines.insert(listStr[i+1], Lines());
             qDebug() << listStr[i+1] << "<--------------";
@@ -328,11 +355,11 @@ void Painter::stringToPoly(QString str)
 }
 
 void Painter::setId(QString id){
-    _id = id;
+    myID = id;
 }
 
 QString Painter::id(){
-    return _id;
+    return myID;
 }
 
 void Painter::clickedButton()
@@ -368,6 +395,47 @@ void Painter::clickedButton()
             break;
     }
     c.hide();
+}
+
+QFrame &Painter::frame()
+{
+    return usersFrame;
+}
+
+void Painter::addCheckbox(QFrame &f, QString name)
+{
+    int cBoxWidth = 100;
+    int cBoxHeight = 25;
+    int margin = 5;
+    int index = f.children().size();
+
+//    QVector<QString>{"Fox","Hawk","Wolf","Eagle","Turtle"};
+    f.setGeometry(f.x(), margin,
+                       cBoxWidth + 2*margin, margin + (margin+cBoxHeight) * (index+1));
+
+    QCheckBox *dynamic = new QCheckBox(name);
+//    QObject::connect(dynamic, SIGNAL(dynamic->clicked()), this, SLOT(userToggled()) );
+    dynamic->setParent(&f);
+    dynamic->setStyleSheet("QCheckBox::indicator { width:25px; height: 25px; }");
+    dynamic->setGeometry(margin, margin + (margin + cBoxHeight)*index, cBoxWidth, cBoxHeight);
+    dynamic->setChecked(true);
+    dynamic->show();
+
+
+
+}
+
+void Painter::userToggled()
+{
+    qDebug() << "pozvo";
+    for(auto i = usersFrame.children().begin()+1; i!=usersFrame.children().end(); ++i){
+        QCheckBox *cb = (QCheckBox*)(*i);
+        if(cb->isChecked()){
+            otherLines[cb->text()].isShown = true;
+        } else {
+            otherLines[cb->text()].isShown = false;
+        }
+    }
 }
 
 Painter::~Painter()

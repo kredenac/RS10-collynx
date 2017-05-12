@@ -12,6 +12,8 @@ class Painter;
 #include <QVector>
 #include <QColorDialog>
 #include <QPushButton>
+#include <QFrame>
+#include <QCheckBox>
 
 namespace Ui {
 class Painter;
@@ -30,8 +32,10 @@ public:
     void setId(QString id);
     QString id();
     ~Painter();
-
+    QFrame &frame();
+    void addCheckbox(QFrame &f, QString name);
 public slots:
+    void userToggled();
     void clickedButton();
     void snapshot();
 private:
@@ -45,7 +49,8 @@ private:
     void stayOnTop(bool setTop);
     chooser c;
     bool alwaysOnTop;
-    QString _id;
+    QString myID;
+    QFrame usersFrame;
 protected:
     void focusInEvent(QFocusEvent *event);
     void focusOutEvent(QFocusEvent *event);

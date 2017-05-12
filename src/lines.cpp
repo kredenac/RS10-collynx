@@ -4,7 +4,7 @@ template <typename T> int sgn(T val) {
     return (T(0) < val) - (val < T(0));
 }
 
-Lines::Lines()
+Lines::Lines() : isShown(true)
 {
     newLine(Shape::Type::line);
 }
@@ -158,6 +158,7 @@ void Drawable::drawOn(QPainter & screen) const
 
 void Lines::drawAll(QPainter & screen) const
 {
+    if (!isShown) return;
     for (const auto l : lines){
         l.drawOn(screen);
     }

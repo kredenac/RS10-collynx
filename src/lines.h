@@ -86,7 +86,7 @@ public:
     void setPen(int color, int brushSize);
     void setPenColor(const int color);
     void setPenWidth(const int brushSize);
-
+    bool isShown;
     void undo();
 private:
     QVector<Drawable> lines;
