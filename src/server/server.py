@@ -2,6 +2,7 @@
 
 import socket, select
 
+Nicks = ["Fox","Hawk","Wolf","Eagle","Turtle"]
 IDs = []
 #Function to broadcast chat messages to all connected clients
 def broadcast_data (sock, message):
@@ -36,7 +37,7 @@ if __name__ == "__main__":
     # Add server socket to the list of readable connections
     CONNECTION_LIST.append(server_socket)
 
-    print "Chat server started on port " + str(PORT)
+    print "Broadcast server started on port " + str(PORT)
 
     while 1:
         # Get the list sockets which are ready to be read through select
@@ -49,10 +50,13 @@ if __name__ == "__main__":
                 sockfd, addr = server_socket.accept()
                 CONNECTION_LIST.append(sockfd)
                 print "Client (%s, %s) connected" % addr
-                IDs.append(str(addr[1]))
-                
+                if len(IDs) < len(Nicks):
+                    IDs.append(Nicks[len(IDs)])
+                else:
+                    IDs.append(str(addr[1]))
+
                 mess = reduce( (lambda x, y: x + "." + y), IDs )
-                broadcast_data(sock, "-9696 "+mess+" <3 ")
+                broadcast_data(sock, "-9696 " + mess + " <3 ")
                 #broadcast_data(sockfd, "[%s:%s] entered room\n" % addr)
 
             #Some incoming message from a client

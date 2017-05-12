@@ -39,8 +39,7 @@ Painter::Painter(QWidget *parent) :
     //setFixedSize(windowSize);
     setMinimumSize(windowSize);
     /**********/
-    createFrame();
-    addCheckbox(usersFrame, "My Layer");
+    createFrame();    
 }
 
 void Painter::createFrame()
@@ -325,7 +324,8 @@ void Painter::stringToPoly(QString str)
             if(id() == ""){
 
                 setId(ids[ids.size()-1]);
-
+                addCheckbox(frame(), "<" + id() + ">");
+                qDebug() << ids[ids.size()-1];
 
                 //if this user isnt the first one connected
                 //add others to hash map
