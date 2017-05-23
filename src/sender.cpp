@@ -5,7 +5,8 @@ bool Sender::makeConnection()
 {
     //qDebug() << "Connecting\r\n";
     mySocket = new QTcpSocket();
-    mySocket->connectToHost(//"192.168.1.10",
+    mySocket->connectToHost(
+                            //"93.86.28.202",
                             "localhost",
                             1234);
     //so client can also read

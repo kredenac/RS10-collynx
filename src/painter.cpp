@@ -39,7 +39,7 @@ Painter::Painter(QWidget *parent) :
     //setFixedSize(windowSize);
     setMinimumSize(windowSize);
     /**********/
-    createFrame();    
+    createFrame();
 }
 
 void Painter::createFrame()
@@ -351,6 +351,19 @@ void Painter::stringToPoly(QString str)
 void Painter::setId(QString id)
 {
     myID = id;
+
+    QHash<QString, QString> colors;
+    colors.insert("Fox","83f52c");
+    colors.insert("Hawk","f3f315");
+    colors.insert("Wolf","ff6600");
+    colors.insert("Eagle","ff0099");
+    colors.insert("Turtle","6e0dd0z");
+    int color = QString("ff0000").toInt(Q_NULLPTR, 16);
+
+    if(colors.contains(id))
+        color = colors.value(id).toInt(Q_NULLPTR, 16);
+
+    myLines.setPenColor(color);
 }
 
 QString Painter::id()
