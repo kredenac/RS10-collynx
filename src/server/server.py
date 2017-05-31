@@ -66,7 +66,10 @@ if __name__ == "__main__":
                     #In Windows, sometimes when a TCP program closes abruptly,
                     # a "Connection reset by peer" exception will be thrown
                     data = sock.recv(RECV_BUFFER)
+                    # if len(data) > 1000:
+                    #     print "Slika stigla na server"
                     if data:
+                        #print "duzina: ".len(data)
                         #broadcast_data(sock, "\r" + '<' + str(sock.getpeername()) + '> ' + data)
                         #broadcast_data(sock, "\r" + data)
                         broadcast_data(sock, data)

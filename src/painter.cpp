@@ -99,19 +99,51 @@ QPixmap * testScreenPtr = NULL;
 
 void Painter::snapshot(){
     static QPixmap testScreen;
+    //static QPixmap testScreen2;
     QScreen *screen = QGuiApplication::primaryScreen();
     //QRect  screenGeometry = screen->geometry();
     testScreen = screen->grabWindow(0)/*.scaledToHeight(screenGeometry.height()*2/3,Qt::FastTransformation)*/;
     //testScreenPtr = &testScreen;
     QImage img = testScreen.toImage().convertToFormat(QImage::Format_Indexed8, Qt::AutoColor);
-    QImageWriter imgWriter("fajl", "PNG");
+    //testScreen2 = QPixmap::fromImage(img,Qt::AutoColor);
+
+    QByteArray ba;
+    QBuffer buffer(&ba);
+
+    QImageWriter imgWriter(&buffer, "PNG");
+
+    //QImageWriter imgWriter("fajl", "PNG");
+
     //imgWriter.setCompression(4);
     //~250Kb bez kompresije, full rezolucija, slacemo fajl(u buildu pod nazivom fajl) koji je sacuvan, umesto img
     qDebug() << "----->" << imgWriter.compression() << " success: " << imgWriter.write(img);
-    testScreen.fromImage(img, Qt::AutoColor);
+    qDebug() << "buffer size painter " << ba.size();
+
+    ba.prepend("slB");
+    ba.append("slE");
+
+    qDebug() << "bytes sent: " << Sender::getInstance().send(ba);
+
+    //testScreen2 = QPixmap::fromImage(img, Qt::AutoColor);
     testScreenPtr = &testScreen;
     show();
-    qDebug() << img.byteCount() << " " << img.format();/*testScreen.toImage().height() << " " << testScreen.toImage().width();*/
+    //qDebug() << img.byteCount() << " " << img.format();/*testScreen.toImage().height() << " " << testScreen.toImage().width();*/
+}
+
+void Painter::ImageReceivedAction(QByteArray image){
+    static QPixmap testScreen;
+    qDebug() << "--------------->STIGLA SLIKA!<----------------" << "size: " << image.size();
+    QImage img = QImage::fromData(image,"PNG");
+    //QImageWriter imgWriter("RECEIVED", "PNG");
+    //qDebug() << "--------------->" << imgWriter.compression() << " success: " << imgWriter.write(img);
+
+
+    //qDebug() << "fromimage: " << testScreen.fromImage(img, Qt::AutoColor);
+
+    testScreen = QPixmap::fromImage(img, Qt::AutoColor);
+    testScreenPtr = &testScreen;
+    update();
+    //qDebug() << "PROSAO" << testScreen.size();
 }
 
 /*************/

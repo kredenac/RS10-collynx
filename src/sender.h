@@ -20,15 +20,20 @@ public:
     void send(QPen &pen, QString id);
     void send(Tag t, QString id);
     void send(Shape::Type shapeType, QString id);
+    int send(QByteArray toSend);
     bool makeConnection();
     static Sender & getInstance();
     Sender(Sender const&)         = delete;
     void operator=(Sender const&) = delete;
     void setPainterFriend(Painter * p);
     Painter * getPainterFriend();
+    void setImg(bool value);
+    bool getImg();
 private:
     Sender(){}
     static bool connected;
+    static bool receivingImage;
+    static QByteArray image;
     QTcpSocket * mySocket;
     Painter * painterFriend;
 

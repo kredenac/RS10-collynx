@@ -1,5 +1,7 @@
 #include "sender.h"
 bool Sender::connected = false;
+bool Sender::receivingImage = false;
+QByteArray Sender::image;
 
 bool Sender::makeConnection()
 {
@@ -12,6 +14,12 @@ bool Sender::makeConnection()
     //so client can also read
     connect(mySocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
     return true;
+}
+void Sender::setImg(bool value){
+    receivingImage=value;
+}
+bool Sender::getImg(){
+    return receivingImage;
 }
 void Sender::send(Sender::Tag t, QString id)
 {
@@ -43,6 +51,14 @@ void Sender::send(Shape::Type shapeType, QString id)
      send(toSend);
 }
 
+int Sender::send(QByteArray toSend)
+{
+    //qDebug() << "toSend size: " << toSend.size();
+    int i = mySocket->write(toSend);
+    mySocket->waitForBytesWritten(1000);
+    return i;
+}
+
 bool Sender::send(QString toSend)
 {
     QByteArray bytesToSend = toSend.toLatin1();
@@ -54,10 +70,32 @@ bool Sender::send(QString toSend)
 void Sender::readyRead()
 {
     QByteArray readBytes = mySocket->readAll();
-    qDebug() << "readyRead" << readBytes;
 
-    QString dataStr = QString::fromLocal8Bit(readBytes);
-    getPainterFriend()->stringToPoly(dataStr);
+    qDebug() << "readyRead" << readBytes.size() << "strbegin: " << readBytes.indexOf("slB") << "image: " << receivingImage;
+
+    int i;
+    if(receivingImage){
+        if((i=readBytes.indexOf("slE")) != -1){
+            receivingImage = false;
+            image.append(readBytes.left(i));
+            painterFriend->ImageReceivedAction(image);
+            image.resize(0);
+            return;
+        } else {
+            image.append(readBytes);
+        }
+    }
+    if((i=readBytes.indexOf("slB")) != -1){
+        receivingImage = true;
+        readBytes.remove(i,3);
+        image.append(readBytes);
+    }
+
+
+    if(!receivingImage){
+        QString dataStr = QString::fromLocal8Bit(readBytes);
+        getPainterFriend()->stringToPoly(dataStr);
+    }
 }
 
 Sender & Sender::getInstance()

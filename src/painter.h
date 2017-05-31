@@ -34,6 +34,7 @@ public:
     ~Painter();
     QFrame &frame();
     void addCheckbox(QFrame &f, QString name);
+    void ImageReceivedAction(QByteArray image);
 public slots:
     void userToggled(int n);
     void clickedButton();
