@@ -228,7 +228,11 @@ void Painter::mouseMoveEvent(QMouseEvent * event )
 {
     //qDebug()<< isMousePressed;
     if (isMousePressed){
-        QPoint newPoint = event->pos();
+        QSize window = size();
+        QPoint posFixed = event->pos();
+        posFixed.rx()*=1920.0/window.width();
+        posFixed.ry()*=1080.0/window.height();
+        QPoint newPoint = posFixed;
 
         Sender::getInstance().send(newPoint, id());
         myLines.addPoint(newPoint, nowDrawing);
@@ -249,11 +253,17 @@ void Painter::mousePressEvent(QMouseEvent *event)
 {
     switch (event->button()) {
     case Qt::LeftButton:
+    {
         isMousePressed = true;
-        beginNewDrawable(event->pos(), id());
+        QSize window = size();
+        QPoint posFixed = event->pos();
+        posFixed.rx()*=1920.0/window.width();
+        posFixed.ry()*=1080.0/window.height();
+        beginNewDrawable(posFixed, id());
         c.hide();
         update();
         break;
+    }
     case Qt::RightButton:
         c.cshow(event->pos(),width(),height(),myLines.getLines().last().pen.color());
         break;
@@ -302,6 +312,9 @@ void Painter::paintEvent(QPaintEvent *event)
 {
     Q_UNUSED(event);
     QPainter painter(this);
+    //painter.setRenderHint(QPainter::HighQualityAntialiasing);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.scale(size().width()/1920.0, size().height()/1080.0);
 
     if (testScreenPtr){
         //painter.drawPixmap(QPoint(0,0),*testScreenPtr);
