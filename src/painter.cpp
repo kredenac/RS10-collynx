@@ -314,12 +314,13 @@ void Painter::paintEvent(QPaintEvent *event)
     QPainter painter(this);
     //painter.setRenderHint(QPainter::HighQualityAntialiasing);
     painter.setRenderHint(QPainter::Antialiasing);
-    painter.scale(size().width()/1920.0, size().height()/1080.0);
 
     if (testScreenPtr){
         //painter.drawPixmap(QPoint(0,0),*testScreenPtr);
         painter.drawPixmap(0,0,this->size().width(), this->size().height(),*testScreenPtr);
     }
+
+    painter.scale(size().width()/1920.0, size().height()/1080.0);
     myLines.drawAll(painter);
 
     QHash<QString, Lines>::const_iterator i = otherLines.constBegin();

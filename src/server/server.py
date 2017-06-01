@@ -1,10 +1,9 @@
-# Tcp Chat server
-
+# Tcp broadcast server
 import socket, select
 
 Nicks = ["Fox","Hawk","Wolf","Eagle","Turtle"]
 IDs = []
-#Function to broadcast chat messages to all connected clients
+#Function to broadcast messages to all connected clients
 def broadcast_data (sock, message):
     if message[0:5] == "-9696":
         myself = True
@@ -18,14 +17,15 @@ def broadcast_data (sock, message):
                 socket.send(message)
             except :
                 # broken socket connection may be, chat client pressed ctrl+c for example
-                socket.close()
-                CONNECTION_LIST.remove(socket)
+                if sock in CONNECTION_LIST:
+                    socket.close()
+                    CONNECTION_LIST.remove(socket)
 
 if __name__ == "__main__":
 
     # List to keep track of socket descriptors
     CONNECTION_LIST = []
-    RECV_BUFFER = 4096 # Advisable to keep it as an exponent of 2
+    RECV_BUFFER = 4096
     PORT = 1234
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -73,13 +73,12 @@ if __name__ == "__main__":
                         #broadcast_data(sock, "\r" + '<' + str(sock.getpeername()) + '> ' + data)
                         #broadcast_data(sock, "\r" + data)
                         broadcast_data(sock, data)
-
-
                 except:
                     broadcast_data(sock, "Client (%s, %s) is offline" % addr)
                     print "Client (%s, %s) is offline" % addr
-                    sock.close()
-                    CONNECTION_LIST.remove(sock)
+                    if sock in CONNECTION_LIST:
+                        sock.close()
+                        CONNECTION_LIST.remove(sock)
                     continue
 
     server_socket.close()
