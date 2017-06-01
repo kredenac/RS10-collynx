@@ -27,7 +27,6 @@ public:
     explicit Painter(QWidget *parent = 0);
     void stringToPoly(QString str);
     Lines myLines;
-    //Lines otherLines;
     QHash<QString, Lines> otherLines;
     void setId(QString id);
     QString id();
@@ -41,19 +40,19 @@ public slots:
     void clickedButton();
     void snapshot();
 private:
-    Ui::Painter *ui;
-    int brushSize;
+    void createFrame();
     QColor selectColor(QPoint pos);
-    Shape::Type nowDrawing;
-    Shape::Type otherDrawing;
     void moveWidgetCenter(const QPoint &globalPos);
     void beginNewDrawable(const QPoint &pos, QString id);
     void stayOnTop(bool setTop);
+    Ui::Painter *ui;
+    int brushSize;
     chooser c;
     bool alwaysOnTop;
     QString myID;
     QFrame usersFrame;
-    void createFrame();
+    Shape::Type nowDrawing;
+    Shape::Type otherDrawing;
     QPixmap * testScreenPtr;
     bool isFullScreen;
 protected:

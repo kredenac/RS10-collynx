@@ -15,12 +15,17 @@ bool Sender::makeConnection()
     connect(mySocket, SIGNAL(readyRead()), this, SLOT(readyRead()), Qt::DirectConnection);
     return true;
 }
-void Sender::setImg(bool value){
+
+void Sender::setImg(bool value)
+{
     receivingImage=value;
 }
-bool Sender::getImg(){
+
+bool Sender::getImg()
+{
     return receivingImage;
 }
+
 void Sender::send(Sender::Tag t, QString id)
 {
     QString coordsToSend = QString::number(t) + " " + QString::number(t) + " " + id + " ";

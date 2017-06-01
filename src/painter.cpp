@@ -5,10 +5,8 @@
 
 Painter::Painter(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line), c(parent), alwaysOnTop(false)
-//    userNames{"Fox","Hawk","Wolf","Eagle","Turtle"}
+    ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line), c(parent), alwaysOnTop(false), myID("")
 {
-    myID = "";
     for(int i=1; i<=c.getButtonNum(); i++){
         QObject::connect(c.getButton(i), SIGNAL(clicked()), this, SLOT(clickedButton()));
     }
@@ -18,10 +16,7 @@ Painter::Painter(QWidget *parent) :
     isMousePressed = false;
     setMouseTracking(true);
     ui->centralWidget->setMouseTracking(true);
-    /*
-    //setStyleSheet("background-image : url(C:/Users/Dzoni/Documents/QtProjects/ColLynx/img_fjords.jpg);");
-    //setStyleSheet("backgroud-style : cover");
-    */
+
     setStyleSheet("background : rgba(5,0,20,0.2);");
     setWindowFlags(Qt::FramelessWindowHint);
     setAttribute(Qt::WA_NoSystemBackground, true);
@@ -32,14 +27,13 @@ Painter::Painter(QWidget *parent) :
 
     // strech window to fit screen
     isFullScreen = false;
-
     QScreen * screen = QGuiApplication::primaryScreen();
     QRect  screenGeometry = screen->geometry();
     int height = screenGeometry.height();
     int width = screenGeometry.width();
     QSize windowSize(width/2,height/2);
     setMinimumSize(windowSize);
-    /**********/
+
     createFrame();
 }
 
@@ -62,6 +56,7 @@ void Painter::toggleScreenSize()
     }
 }
 
+//creates frame holding a list of users
 void Painter::createFrame()
 {
     int cBoxWidth = 100;
@@ -74,10 +69,9 @@ void Painter::createFrame()
     frame().show();
 }
 
-//FIXME iz nekog razloga mora da se klikne da bi se video window kad ulazi u focus
 void Painter::focusInEvent(QFocusEvent *event)
 {
-    qDebug() << "always on top " << alwaysOnTop;
+    //qDebug() << "always on top " << alwaysOnTop;
     if (!alwaysOnTop) return;
     static int i = 0;
     if (event->gotFocus()){
@@ -87,13 +81,6 @@ void Painter::focusInEvent(QFocusEvent *event)
         this->parentWidget()->setWindowFlags(
                     this->parentWidget()->windowFlags() & ~Qt::WindowTransparentForInput);
         this->parentWidget()->show();
-
-
-        //this->parentWidget()->update();
-        //this->show();
-        //this->setFocus();
-
-        //moveWidgetCenter(this->parentWidget()->pos() + QPoint(-5,-5) );
     }
 }
 
@@ -107,25 +94,17 @@ void Painter::focusOutEvent(QFocusEvent *event)
         this->parentWidget()->setWindowFlags(
                     this->parentWidget()->windowFlags() | Qt::WindowTransparentForInput);
         this->parentWidget()->show();
-        //this->show();
-
     }
 }
 
-
-
-/**TMP test****/
-
-
+//take a screenshot
 void Painter::snapshot(){
     static QPixmap testScreen;
     //static QPixmap testScreen2;
     QScreen *screen = QGuiApplication::primaryScreen();
     //QRect  screenGeometry = screen->geometry();
-    testScreen = screen->grabWindow(0)/*.scaledToHeight(screenGeometry.height()*2/3,Qt::FastTransformation)*/;
-    //testScreenPtr = &testScreen;
+    testScreen = screen->grabWindow(0);
     QImage img = testScreen.toImage().convertToFormat(QImage::Format_Indexed8, Qt::AutoColor);
-    //testScreen2 = QPixmap::fromImage(img,Qt::AutoColor);
 
     QByteArray ba;
     QBuffer buffer(&ba);
@@ -136,15 +115,13 @@ void Painter::snapshot(){
 
     //imgWriter.setCompression(4);
     //~250Kb bez kompresije, full rezolucija, slacemo fajl(u buildu pod nazivom fajl) koji je sacuvan, umesto img
-    qDebug() << "----->" << imgWriter.compression() << " success: " << imgWriter.write(img);
-    qDebug() << "buffer size painter " << ba.size();
+    //qDebug() << "----->" << imgWriter.compression() << " success: " << imgWriter.write(img);
+    //qDebug() << "buffer size painter " << ba.size();
 
     ba.prepend("slB");
     ba.append("slE");
 
     qDebug() << "bytes sent: " << Sender::getInstance().send(ba);
-
-    //testScreen2 = QPixmap::fromImage(img, Qt::AutoColor);
     testScreenPtr = &testScreen;
     show();
     //qDebug() << img.byteCount() << " " << img.format();/*testScreen.toImage().height() << " " << testScreen.toImage().width();*/
@@ -152,21 +129,16 @@ void Painter::snapshot(){
 
 void Painter::ImageReceivedAction(QByteArray image){
     static QPixmap testScreen;
-    qDebug() << "--------------->STIGLA SLIKA!<----------------" << "size: " << image.size();
+    //qDebug() << "--------------->STIGLA SLIKA!<----------------" << "size: " << image.size();
     QImage img = QImage::fromData(image,"PNG");
-    //QImageWriter imgWriter("RECEIVED", "PNG");
     //qDebug() << "--------------->" << imgWriter.compression() << " success: " << imgWriter.write(img);
-
-
     //qDebug() << "fromimage: " << testScreen.fromImage(img, Qt::AutoColor);
 
     testScreen = QPixmap::fromImage(img, Qt::AutoColor);
     testScreenPtr = &testScreen;
     update();
-    //qDebug() << "PROSAO" << testScreen.size();
 }
 
-/*************/
 void Painter::keyPressEvent(QKeyEvent * event)
 {
     //qDebug() << "key = " << event->key();
@@ -253,8 +225,8 @@ void Painter::mouseMoveEvent(QMouseEvent * event )
     if (isMousePressed){
         QSize window = size();
         QPoint posFixed = event->pos();
-        posFixed.rx()*=1920.0/window.width();
-        posFixed.ry()*=1080.0/window.height();
+        posFixed.rx() *= 1920.0/window.width();
+        posFixed.ry() *= 1080.0/window.height();
         QPoint newPoint = posFixed;
 
         Sender::getInstance().send(newPoint, id());
@@ -280,8 +252,8 @@ void Painter::mousePressEvent(QMouseEvent *event)
         isMousePressed = true;
         QSize window = size();
         QPoint posFixed = event->pos();
-        posFixed.rx()*=1920.0/window.width();
-        posFixed.ry()*=1080.0/window.height();
+        posFixed.rx() *= 1920.0 / window.width();
+        posFixed.ry() *= 1080.0 / window.height();
         beginNewDrawable(posFixed, id());
         c.hide();
         update();
@@ -370,13 +342,8 @@ void Painter::stringToPoly(QString str)
     if (listStr.size() <= 2 || listStr.size() % 3){
         return;
     }
-
-    if (str.length() > 1000 ){
-        qDebug() << "primih sliku";
-    }
     //parse incoming string according to first tag
     for (int i = 0; i < listStr.size(); i+=3){
-        //qDebug() << "x je " << listStr[i] << ", y je " << listStr[i+1];
         QPoint newPoint(listStr[i].toInt(), listStr[i+1].toInt());
         qDebug() << newPoint.x() << " newpoint.x";
         switch (newPoint.x()) {
@@ -410,15 +377,18 @@ void Painter::stringToPoly(QString str)
                 //add others to hash map
                 for(auto i = ids.constBegin(); i!=ids.constEnd()-1; ++i){
                     otherLines.insert(*i, Lines());
+                    otherLines[*i].setPen(0xff0000, brushSize);
                     addCheckbox(frame(),*i);
                 }
             } else {
                 otherLines.insert(ids[ids.size()-1], Lines());
-                addCheckbox(frame(),ids[ids.size()-1]);
+                otherLines[ids[ids.size()-1]].setPen(0xff0000, brushSize);
+                addCheckbox(frame(), ids[ids.size()-1]);
             }
             //otherLines.insert(listStr[i+1], Lines());
-            qDebug() << listStr[i+1] << "<--------------";
-            break;}
+            //qDebug() << listStr[i+1] << "<--------------";
+            break;
+        }
         default:
             otherLines[listStr[i+2]].addPoint(newPoint, otherDrawing);
             break;
@@ -454,7 +424,6 @@ void Painter::clickedButton()
 {
     QString name = ((QPushButton*)sender())->objectName();
 
-    // HACK (unicode)
     char index = name[name.size()-1].unicode();
     switch(index){
         case '1':
@@ -478,7 +447,6 @@ void Painter::clickedButton()
             myLines.changeLastType(nowDrawing);
             break;
         case '6':
-            // TODO fix position, and change dialog in function
             selectColor(QPoint(100,100));
             break;
     }
@@ -496,8 +464,6 @@ void Painter::addCheckbox(QFrame &f, QString name)
     int cBoxHeight = 25;
     int margin = 5;
     int index = f.children().size();
-
-    //QVector<QString>{"Fox","Hawk","Wolf","Eagle","Turtle"};
     f.setGeometry(f.x(), margin,
                        cBoxWidth + 2*margin, margin + (margin+cBoxHeight) * (index+1));
 

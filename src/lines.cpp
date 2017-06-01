@@ -15,27 +15,27 @@ MyEllipse::MyEllipse() : firstPoint(true)
 MyRectangle::MyRectangle() : firstPoint(true)
 {}
 
-    void Lines::changeLastType(Shape::Type shapeType)
-    {
-        //delete lines.last().shape;
-        switch (shapeType) {
-        case Shape::Type::rectangle:
-            lines.last().shape = new MyRectangle();
-            break;
-        case Shape::Type::square:
-            lines.last().shape = new MySquare();
-            break;
-        case Shape::Type::ellipse:
-            lines.last().shape = new MyEllipse();
-            break;
-        case Shape::Type::circle:
-            lines.last().shape = new MyCircle();
-            break;
-        default:
-            lines.last().shape = new MyLine();
-            break;
-        }
+void Lines::changeLastType(Shape::Type shapeType)
+{
+    delete lines.last().shape;
+    switch (shapeType) {
+    case Shape::Type::rectangle:
+        lines.last().shape = new MyRectangle();
+        break;
+    case Shape::Type::square:
+        lines.last().shape = new MySquare();
+        break;
+    case Shape::Type::ellipse:
+        lines.last().shape = new MyEllipse();
+        break;
+    case Shape::Type::circle:
+        lines.last().shape = new MyCircle();
+        break;
+    default:
+        lines.last().shape = new MyLine();
+        break;
     }
+}
 
 void MyLine::addPoint(QPoint newPoint)
 {
@@ -149,11 +149,6 @@ void Drawable::drawOn(QPainter & screen) const
     screen.setPen(pen);
     //qDebug() << poly.length();
     shape->drawSelf(screen);
-    /*if (poly.length()==1){
-      screen.drawPoint(poly.first());
-    } else {
-      screen.drawPolyline(poly);
-    }*/
 }
 
 void Lines::drawAll(QPainter & screen) const
@@ -181,7 +176,6 @@ void Lines::newLine(QPen newPen, int brushSize, Shape::Type shapeType)
     newPen.setCapStyle(Qt::RoundCap);
     newPen.setWidth(brushSize);
     newPoly.pen = newPen;
-    newPen.setCosmetic(true);
     lines.append(newPoly);
 }
 
@@ -192,7 +186,6 @@ void Lines::newLine(Shape::Type shapeType)
     newPen.setCapStyle(Qt::RoundCap);
     int defaultWidth = 7;
     newPen.setWidth(defaultWidth);
-    newPen.setCosmetic(true);
     newPoly.pen = newPen;
     lines.append(newPoly);
 }
@@ -203,7 +196,6 @@ void Lines::newLine(QPen newPen, Shape::Type shapeType)
     newPoly.pen = newPen;
 
     lines.append(newPoly);
-    //return lines.last().poly;
 }
 
 void Lines::setPen(QPen newPen)

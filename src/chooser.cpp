@@ -6,9 +6,6 @@ chooser::chooser(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::chooser)
 {
-//    QPushButton* pushButton = findChild<QPushButton*>("pushButton");
-//    ui->pushButton
-
     setStyleSheet("background : rgba(0,0,200,0.7);");
     hide();
     ui->setupUi(this);
@@ -19,6 +16,7 @@ chooser::~chooser()
     delete ui;
 }
 
+//postavi boju pickera, i pozicioniraj ga
 void chooser::cshow(QPoint pos, int w, int h, QColor col)
 {
     int y = pos.y();
