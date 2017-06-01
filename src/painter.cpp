@@ -298,6 +298,17 @@ void Painter::mousePressEvent(QMouseEvent *event)
     }
 }
 
+void Painter::resizeEvent(QResizeEvent *event)
+{
+    Q_UNUSED(event);
+    // move the frame where current users checkbox is located with the right border
+    int cBoxWidth = 100;
+    int margin = 5;
+    int correction = 80;
+    frame().setGeometry(geometry().width() - cBoxWidth - correction - 3*margin,
+                        frame().y(), frame().width(), frame().height());
+}
+
 void Painter::beginNewDrawable(const QPoint & pos, QString id)
 {
     //send pen info to others
@@ -314,7 +325,6 @@ void Painter::moveWidgetCenter(const QPoint& globalPos)
     QPoint offset(width()/2, height()/2);
     parentWidget()->move(globalPos - offset);
 }
-
 
 QColor Painter::selectColor(QPoint pos)
 {
