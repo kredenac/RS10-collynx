@@ -35,6 +35,7 @@ public:
     QFrame &frame();
     void addCheckbox(QFrame &f, QString name);
     void ImageReceivedAction(QByteArray image);
+    void toggleScreenSize();
 public slots:
     void userToggled(int n);
     void clickedButton();
@@ -53,6 +54,8 @@ private:
     QString myID;
     QFrame usersFrame;
     void createFrame();
+    QPixmap * testScreenPtr;
+    bool isFullScreen;
 protected:
     void focusInEvent(QFocusEvent *event);
     void focusOutEvent(QFocusEvent *event);

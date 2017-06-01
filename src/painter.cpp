@@ -28,18 +28,37 @@ Painter::Painter(QWidget *parent) :
     setAttribute(Qt::WA_TranslucentBackground, true);
     setFocusPolicy(Qt::StrongFocus);
 
+    testScreenPtr = NULL;
+
     // strech window to fit screen
+    isFullScreen = false;
+
     QScreen * screen = QGuiApplication::primaryScreen();
     QRect  screenGeometry = screen->geometry();
     int height = screenGeometry.height();
     int width = screenGeometry.width();
-    //qDebug() << height << " " << width;
-    //QSize windowSize(width,height);
     QSize windowSize(width/2,height/2);
-    //setFixedSize(windowSize);
     setMinimumSize(windowSize);
     /**********/
     createFrame();
+}
+
+void Painter::toggleScreenSize()
+{
+    isFullScreen = !isFullScreen;
+    QScreen * screen = QGuiApplication::primaryScreen();
+    QRect  screenGeometry = screen->geometry();
+    int height = screenGeometry.height();
+    int width = screenGeometry.width();
+    if(!isFullScreen){
+        setMinimumSize(width/2, height/2);
+        setMaximumSize(width/2, height/2);
+        setMaximumSize(width, height);
+        this->parentWidget()->adjustSize();
+    } else {
+        setMaximumSize(width, height);
+        setMinimumSize(width, height);
+    }
 }
 
 void Painter::createFrame()
@@ -95,7 +114,7 @@ void Painter::focusOutEvent(QFocusEvent *event)
 
 
 /**TMP test****/
-QPixmap * testScreenPtr = NULL;
+
 
 void Painter::snapshot(){
     static QPixmap testScreen;
@@ -182,6 +201,9 @@ void Painter::keyPressEvent(QKeyEvent * event)
         //ovih 10 je super ubrzanje, a radi na fullscreen 15". Ko ima veci ekran i procita ovo neka uhvati screenshot
         //na fullscreenu i ako se vidi Collynx, povecaj za 5ms :)
         QTimer::singleShot(10, this, SLOT(snapshot()));
+        break;
+    case Qt::Key_F:
+        toggleScreenSize();
         break;
     case Qt::Key_1:
         nowDrawing = Shape::Type::line;
