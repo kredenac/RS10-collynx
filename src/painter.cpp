@@ -50,6 +50,7 @@ void Painter::toggleScreenSize()
     QRect  screenGeometry = screen->geometry();
     int height = screenGeometry.height();
     int width = screenGeometry.width();
+    move(0,0);
     if(!isFullScreen){
         setMinimumSize(width/2, height/2);
         setMaximumSize(width/2, height/2);
