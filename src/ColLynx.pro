@@ -28,13 +28,11 @@ SOURCES += main.cpp\
         painter.cpp \
     sender.cpp \
     lines.cpp \
-    transform.cpp \
     chooser.cpp
 
 HEADERS  += painter.h \
     sender.h \
     lines.h \
-    transform.h \
     chooser.h
 
 FORMS    += painter.ui \

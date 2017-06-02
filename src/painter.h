@@ -3,7 +3,6 @@
 class Painter;
 #include "sender.h"
 #include "lines.h"
-#include "transform.h"
 #include "chooser.h"
 #include <QMainWindow>
 #include <QtGui>

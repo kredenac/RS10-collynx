@@ -5,7 +5,8 @@
 
 Painter::Painter(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::Painter), brushSize(7), nowDrawing(Shape::Type::line), c(parent), alwaysOnTop(false), myID("")
+    ui(new Ui::Painter), brushSize(7), c(parent), alwaysOnTop(false), myID(""),
+    nowDrawing(Shape::Type::line), testScreenPtr(nullptr)
 {
     for(int i=1; i<=c.getButtonNum(); i++){
         QObject::connect(c.getButton(i), SIGNAL(clicked()), this, SLOT(clickedButton()));
@@ -22,8 +23,6 @@ Painter::Painter(QWidget *parent) :
     setAttribute(Qt::WA_NoSystemBackground, true);
     setAttribute(Qt::WA_TranslucentBackground, true);
     setFocusPolicy(Qt::StrongFocus);
-
-    testScreenPtr = NULL;
 
     // strech window to fit screen
     isFullScreen = false;
@@ -115,8 +114,8 @@ void Painter::snapshot(){
 
     //imgWriter.setCompression(4);
     //~250Kb bez kompresije, full rezolucija, slacemo fajl(u buildu pod nazivom fajl) koji je sacuvan, umesto img
-    //qDebug() << "----->" << imgWriter.compression() << " success: " << imgWriter.write(img);
-    //qDebug() << "buffer size painter " << ba.size();
+    qDebug() << "----->" << imgWriter.compression() << " success: " << imgWriter.write(img);
+    qDebug() << "buffer size painter " << ba.size();
 
     ba.prepend("slB");
     ba.append("slE");
@@ -377,12 +376,10 @@ void Painter::stringToPoly(QString str)
                 //add others to hash map
                 for(auto i = ids.constBegin(); i!=ids.constEnd()-1; ++i){
                     otherLines.insert(*i, Lines());
-                    otherLines[*i].setPen(0xff0000, brushSize);
                     addCheckbox(frame(),*i);
                 }
             } else {
                 otherLines.insert(ids[ids.size()-1], Lines());
-                otherLines[ids[ids.size()-1]].setPen(0xff0000, brushSize);
                 addCheckbox(frame(), ids[ids.size()-1]);
             }
             //otherLines.insert(listStr[i+1], Lines());
